@@ -66,4 +66,4 @@ class Etape(Base):
 
     
 def create_database():
-    Base.metaData.create_all(engine)
+    Base.metadata.create_all(engine)
