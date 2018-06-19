@@ -16,14 +16,6 @@ engine = create_engine('sqlite:///database.db')
 Session = sessionmaker(bind=engine)
 Base = declarative_base()
 
-class Arret(Base):
-    __tablename__ = 'arret'
-    id_arret = Column(Integer, primary_key=True, autoincrement=True)
-    nom_arret = Column(String(32))
-
-    def __repr__(self):
-        return "nom_arret='{}'".format(self.nom_arret)
-
 class Bus(Base):
     __tablename__ = 'bus'
     id_bus = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -52,7 +44,12 @@ class Etape(Base):
     id_trajet = Column(BigInteger, ForeignKey('trajet.id_trajet'))
     id_arret = Column(BigInteger, ForeignKey('arret.id_arret'))
     heure_arret_theorique = Column(DateTime)
-    heure_arret_estime = Column(DateTime)
+    heure_arret_reelle = Column(DateTime)
     ecart = Column(Integer)
+
+class Arret(Base):
+    __tablename__ = 'arret'
+    id_arret = Column(Integer, primary_key=True, autoincrement=True)
+    nom_arret = Column(String(32))
 
 Base.metadata.create_all(engine)
