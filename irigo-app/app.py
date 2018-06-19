@@ -9,7 +9,7 @@ import argparse
 
 from db import create_database
 
-from etl import download, create_dataframes, test_dataframes, fill_database
+# from etl import download, create_dataframes, test_dataframes, fill_database
 
 def fetch(verbose=False, directory="./data"):
     """Requête sur l'API data.angers.fr et stockage dans un fichier JSON"""
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.create_db:
-        if args.verbose
+        if args.verbose:
             print("--> Creating database")
         create_database()
     
@@ -100,4 +100,3 @@ if __name__ == '__main__':
 
         # On rentre ces informations dans la DB
         fill_database(d_df)
-        
