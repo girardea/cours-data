@@ -53,15 +53,15 @@ arret = pd.DataFrame({
     'mne_arret': mne_arret
 })
 
-#Bus
-id_vh = [elem['fields']['idvh'] for elem in dd]
-type_vh = [elem['fields']['type'] for elem in dd]
-etat_vh = [elem['fields']['etat'] for elem in dd]
+#Vehicule
+id_vehicule = [elem['fields']['idvh'] for elem in dd]
+type_vehicule = [elem['fields']['type'] for elem in dd]
+etat_vehicule = [elem['fields']['etat'] for elem in dd]
 
 bus = pd.DataFrame({
-    'id_vh': id_vh,
-    'type_vh': type_vh,
-    'etat_vh': etat_vh
+    'id_vehicule': id_vehicule,
+    'type_vehicule': type_vehicule,
+    'etat_vehicule': etat_vehicule
 })
 
 #Ligne
@@ -76,16 +76,18 @@ ligne = pd.DataFrame({
 })
 
 #Trajet
-id_bus = [elem['fields']['idvh'] for elem in dd]
+id_vehicule = [elem['fields']['idvh'] for elem in dd]
 id_ligne = [elem['fields']['idligne'] for elem in dd]
 latitude = [elem['fields']['coordonnees'][0] for elem in dd]
 longitude = [elem['fields']['coordonnees'][1] for elem in dd]
+destination = [elem['fields']['dest'] for elem in dd]
 
 trajet = pd.DataFrame({
-    'id_bus': id_bus,
+    'id_vehicule': id_vehicule,
     'id_ligne': id_ligne,
     'latitude': latitude,
-    'longitude': longitude
+    'longitude': longitude,
+    'destination': destination
 })
 
 #Etape
@@ -96,7 +98,7 @@ ecart = [elem['fields']['ecart'] for elem in dd]
 
 etape = pd.DataFrame({
     'id_arret': id_arret,
-    'heure_theorique': harret,
+    'heure_arret_theorique': harret,
     'ecart': ecart,
     'record_timestamp': record_timestamp
 })
@@ -105,11 +107,11 @@ etape['record_timestamp'] = pd.to_datetime(etape['record_timestamp'])
 
 def transfo(row):
     return row['record_timestamp'] + dt.timedelta(seconds=row['ecart'])
-etape['heure_estime'] = etape.apply(transfo, axis='columns')
+etape['heure_arret_theorique'] = etape.apply(transfo, axis='columns')
 
 
 # Ouverture de la connection vers la bdd
-engine = create_engine("sqlite:///data.sqlite")
+engine = create_engine("sqlite:///database.db")
 connection = engine.connect()
 
 #Table arret
