@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+#vim
+*.sw[pow]
+
 # Distribution / packaging
 .Python
 build/
@@ -56,6 +59,7 @@ coverage.xml
 local_settings.py
 db.sqlite3
 *.sqlite
+*.db
 
 # Flask stuff:
 instance/
@@ -103,3 +107,4 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+node_modules/

@@ -1,0 +1,93 @@
+[
+    {
+      "id_trajet": 1,
+      "id_vehicule": 1,
+      "type_vehicule": "Bus",
+      "etat": 1,
+      "id_ligne": 1,
+      "nom_ligne" : "AVRILLE - ARDENNE → ACACIAS",
+      "num_ligne": 11,
+      "arrets": [
+        {
+          "id_arret": "1AARD",
+          "nom_arret": "AVRILLE - ARDENNE",
+          "coordinees": [
+            -0.59615,
+            47.51151
+          ]
+        },
+        {
+          "id_arret": "1BASC",
+          "nom_arret": "BASCULE",
+          "coordinees": [
+            -0.591643,
+            47.508797
+          ]
+        },
+        {
+          "id_arret": "1JVIL",
+          "nom_arret": "JEAN VILAR",
+          "coordinees": [
+            -0.562352,
+            47.444925
+          ]
+        },
+        {
+          "id_arret": "1RALL",
+          "nom_arret": "RALLIEMENT",
+          "coordinees": [
+            -0.551782,
+            47.471211
+          ]
+        },
+        {
+          "id_arret": "2BMAI",
+          "nom_arret": "BERGES DE MAINE",
+          "coordinees": [
+            -0.549421,
+            47.479325
+          ]
+        },
+        {
+          "id_arret": "2JVIL",
+          "nom_arret": "JEAN VILAR",
+          "coordinees": [
+            -0.562259,
+            47.444918
+          ]
+        },
+        {
+          "id_arret": "2RALL",
+          "nom_arret": "RALLIEMENT",
+          "coordinees": [
+            -0.55168,
+            47.471285
+          ]
+        },
+        {
+          "id_arret": "ABI",
+          "nom_arret": "AVICENNE",
+          "coordinees": [
+            -0.688601,
+            47.481325
+          ]
+        },
+        {
+          "id_arret": "ACAS-7C",
+          "nom_arret": "ACACIAS",
+          "coordinees": [
+            -0.585677,
+            47.502728
+          ]
+        },
+        {
+          "id_arret": "ACAS-7E",
+          "nom_arret": "ACACIAS",
+          "coordinees": [
+            -0.585904,
+            47.503235
+          ]
+        }
+      ]
+    }
+]
