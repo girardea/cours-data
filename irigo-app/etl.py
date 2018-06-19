@@ -58,7 +58,7 @@ id_vehicule = [elem['fields']['idvh'] for elem in dd]
 type_vehicule = [elem['fields']['type'] for elem in dd]
 etat_vehicule = [elem['fields']['etat'] for elem in dd]
 
-bus = pd.DataFrame({
+vehicule = pd.DataFrame({
     'id_vehicule': id_vehicule,
     'type_vehicule': type_vehicule,
     'etat_vehicule': etat_vehicule
@@ -107,7 +107,7 @@ etape['record_timestamp'] = pd.to_datetime(etape['record_timestamp'])
 
 def transfo(row):
     return row['record_timestamp'] + dt.timedelta(seconds=row['ecart'])
-etape['heure_arret_theorique'] = etape.apply(transfo, axis='columns')
+etape['heure_arret_reelle'] = etape.apply(transfo, axis='columns')
 
 
 # Ouverture de la connection vers la bdd
@@ -117,17 +117,17 @@ connection = engine.connect()
 #Table arret
 arret.to_sql('arret', connection, if_exists='replace', index=False)
 
-#Table bus
-bus.to_sql('bus', connection, if_exists='replace', index=False)
+#Table vehicule
+vehicule.to_sql('vehicule', connection, if_exists='replace', index=False)
 
 #Table ligne
 ligne.to_sql('ligne', connection, if_exists='replace', index=False)
 
 #Table trajet
-trajet.to_sql('trajet', connection, if_exists='replace', index=False)
+trajet.to_sql('trajet', connection, if_exists='append', index=False)
 
 #Table etape
-etape.to_sql('etape', connection, if_exists='replace', index=False)
+etape.to_sql('etape', connection, if_exists='append', index=False)
 
 #Fermeture connection
 connection.close()
