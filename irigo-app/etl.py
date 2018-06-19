@@ -21,6 +21,28 @@ from sqlalchemy import create_engine
 # 
 # Si vous voulez glisser des paramètres avec la requête, utilisez l'argument optionnel `params`, qui accepte un simple dictionnaire.
 
+def add_index(df, tablename, indexname, engine):
+    """Ajoute une nouvelle colonne avec l'auto-incrément"""
+    from sqlalchemy import func, MetaData, select, Table
+    
+    connection = engine.connect()
+    
+    # On va chercher dans la table le dernier incrément
+    table = Table(tablename, MetaData(), autoload=True,
+                  autoload_with=engine)
+    stmt = select([func.max(getattr(table.c, indexname))])
+    idxmax = connection.execute(stmt).scalar()
+    
+    connection.close()
+
+    if idxmax is None:
+        idxmax = -1
+    
+    # On rajoute la colonne d'index
+    df[indexname] = range(idxmax + 1, idxmax + 1 + len(df))
+    
+    return df
+
 g = requests.get("https://data.angers.fr/api/records/1.0/search/",
                  params={
                      'dataset': 'bus-tram-position-tr',
@@ -124,9 +146,11 @@ vehicule.to_sql('vehicule', connection, if_exists='replace', index=False)
 ligne.to_sql('ligne', connection, if_exists='replace', index=False)
 
 #Table trajet
+trajet = add_index(trajet, 'trajet', 'id_trajet', engine)
 trajet.to_sql('trajet', connection, if_exists='append', index=False)
 
 #Table etape
+etape = add_index(etape, 'etape', 'id_etape', engine)
 etape.to_sql('etape', connection, if_exists='append', index=False)
 
 #Fermeture connection
