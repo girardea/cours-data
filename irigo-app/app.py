@@ -9,6 +9,8 @@ import argparse
 
 from db import create_database
 
+from etl import download, create_dataframes, test_dataframes, fill_database
+
 def fetch(verbose=False, directory="./data"):
     """Requête sur l'API data.angers.fr et stockage dans un fichier JSON"""
     # Pour manipuler les dates et temps
@@ -68,15 +70,34 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--create-db", help="create database",
                         action="store_true", default=False)
-    parser.add_argument("--fetch", help="Fetches API and dumps in json file",
+    parser.add_argument("--fetch", help="fetches API and dumps in json file",
                         action="store_true", default=False)
+    parser.add_argument("--update", help="queries API and updates database",
+                        action="store_true", default=False)
+    parser.add_argument("--verbose", help="verbose mode", action="store_true",
+                        default=False)
     
     args = parser.parse_args()
 
     if args.create_db:
-        print("--> Creating database")
+        if args.verbose
+            print("--> Creating database")
         create_database()
     
     if args.fetch:
-        fetch(verbose=True)
+        fetch(verbose=args.verbose)
+    
+    if args.update:
+        # Requête l'API et renvoie un dictionnaire (traduction objet du JSON)
+        d = download()
+
+        # A partir du dictionnaire, on crée les tables
+        # sous la forme de DataFrames
+        d_df = create_dataframes(d)
+
+        # On teste les colonnes (types, aberrations, etc.)
+        test_dataframes(d_df)
+
+        # On rentre ces informations dans la DB
+        fill_database(d_df)
         
