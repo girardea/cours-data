@@ -43,7 +43,7 @@ class Ligne(Base):
 
 class Trajet(Base):
     __tablename__ = 'trajet'
-    id_trajet = Column(BigInteger, primary_key=True, autoincrement=True)
+    # id_trajet = Column(BigInteger, primary_key=True, autoincrement=True)
 
     id_vehicule = Column(BigInteger, ForeignKey('vehicule.id_vehicule'))
     id_ligne = Column(BigInteger, ForeignKey('ligne.id_ligne'))
