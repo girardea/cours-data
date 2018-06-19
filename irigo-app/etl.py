@@ -67,12 +67,12 @@ bus = pd.DataFrame({
 #Ligne
 id_ligne = [elem['fields']['idligne'] for elem in dd]
 nom_ligne = [elem['fields']['nomligne'] for elem in dd]
-mne_ligne = [elem['fields']['mnemoligne'] for elem in dd]
+num_ligne = [elem['fields']['mnemoligne'] for elem in dd]
 
 ligne = pd.DataFrame({
     'id_ligne': id_arret,
     'nom_ligne': nom_ligne,
-    'mne_ligne': mne_ligne
+    'num_ligne': num_ligne
 })
 
 #Trajet
