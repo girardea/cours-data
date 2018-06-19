@@ -7,6 +7,8 @@
 
 import argparse
 
+from db import create_database
+
 def fetch(verbose=False, directory="./data"):
     """Requête sur l'API data.angers.fr et stockage dans un fichier JSON"""
     # Pour manipuler les dates et temps
@@ -73,6 +75,7 @@ if __name__ == '__main__':
 
     if args.create_db:
         print("--> Creating database")
+        create_database()
     
     if args.fetch:
         fetch(verbose=True)
