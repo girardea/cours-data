@@ -3,17 +3,17 @@
 
 # # Import des modules nécessaires
 
-# Pour manipuler efficacement des tables de données dans Python
-import pandas as pd
-
-# Pour faire des requêtes GET et POST
-import requests
-
 # Pour gérer les date
 import datetime as dt
 
+# Pour manipuler efficacement des tables de données dans Python
+import pandas as pd
+# Pour faire des requêtes GET et POST
+import requests
+
 # sql
 from sqlalchemy import create_engine
+
 
 def download():
     # Pour lancer une requête GET, c'est ultra-simple : on utilise `requests.get(url)`.
@@ -111,27 +111,51 @@ def create_dataframes(d):
 
     return d_df
 
+
+def add_index(df, tablename, indexname, engine):
+    """Ajoute une nouvelle colonne avec l'auto-incrément"""
+    from sqlalchemy import func, MetaData, select, Table
+
+    connection = engine.connect()
+
+    # On va chercher dans la table le dernier incrément
+    table = Table(tablename, MetaData(), autoload=True,
+                  autoload_with=engine)
+    stmt = select([func.max(getattr(table.c, indexname))])
+    idxmax = connection.execute(stmt).scalar()
+
+    connection.close()
+
+    if idxmax is None:
+        idxmax = -1
+
+    # On rajoute la colonne d'index
+    df[indexname] = range(idxmax + 1, idxmax + 1 + len(df))
+
+    return df
+
 def fill_database(d_df):
     # Ouverture de la connection vers la bdd
     engine = create_engine("sqlite:///database.db")
     connection = engine.connect()
 
-    def add_index(df, tablename, indexname):
-        """Ajoute une nouvelle colonne  avec l'auto-increment"""
-
-        # On va chercher dans la table le dernier increment
-        table =
-
     # Table arret
     arret.to_sql('arret', connection, if_exists='replace', index=False)
-    # Table bus
-    bus.to_sql('bus', connection, if_exists='replace', index=False)
+
+    # Table vehicule
+    vehicule.to_sql('vehicule', connection, if_exists='replace', index=False)
+
     # Table ligne
     ligne.to_sql('ligne', connection, if_exists='replace', index=False)
+
     # Table trajet
-    trajet.to_sql('trajet', connection, if_exists='replace', index=False)
+    trajet = add_index(trajet, 'trajet', 'id_trajet', engine)
+    trajet.to_sql('trajet', connection, if_exists='append', index=False)
+
     # Table etape
-    etape.to_sql('etape', connection, if_exists='replace', index=False)
+    etape = add_index(etape, 'etape', 'id_etape', engine)
+    etape.to_sql('etape', connection, if_exists='append', index=False)
 
     # Fermeture connection
     connection.close()
+
