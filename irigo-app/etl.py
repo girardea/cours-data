@@ -126,8 +126,7 @@ def test(df):
                     result = False
         assert result 
     except Exception as e:
-        print(e)
-    result = True    
+        print(e) 
 
 def add_index(df, tablename, indexname, engine):
     """Ajoute une nouvelle colonne avec l'auto-incrément"""
