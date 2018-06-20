@@ -79,4 +79,7 @@ class Etape(Base):
 
     
 def create_database():
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(bind=engine)
+
+def drop_database():
+    Base.metadata.drop_all(bind=engine)
