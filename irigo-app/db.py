@@ -6,27 +6,20 @@
     permettant d'importer depuis les données brutes dans le modèle de données
     propre.
 """
-from sqlalchemy import create_engine, Column, Integer, BigInteger, Float, MetaData, Table, ForeignKey, String, DateTime
+from sqlalchemy import (Column, Integer, BigInteger, Float, MetaData, Table,
+                        ForeignKey, String, DateTime)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import pandas as pd
 import datetime as dt
 import json
 
-with open('db_settings.json', 'r') as file:
-    dbs = json.load(file)
+# Local imports
+import utils
 
-# Ouverture de la connection vers la bdd
-engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
-                    '/{dbn}'.format(dialect=dbs['dialect'],
-                                    driver=dbs['driver'],
-                                    user=dbs['username'],
-                                    pwd=dbs['password'],
-                                    host=dbs['host'],
-                                    port=dbs['port'],
-                                    dbn=dbs['database']))
+engine = utils.create_engine(flavor='sqlite')
+
 Session = sessionmaker(bind=engine)
-print(engine.table_names())
 
 Base = declarative_base()
 
