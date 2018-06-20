@@ -66,7 +66,7 @@ class Etape(Base):
     id_trajet = Column(BigInteger, ForeignKey('trajet.id_trajet'))
     id_arret = Column(BigInteger, ForeignKey('arret.id_arret'))
     heure_arret_theorique = Column(DateTime)
-    heure_arret_reelle = Column(DateTime)
+    heure_arret_estimee = Column(DateTime)
     record_timestamp = Column(DateTime)
     ecart = Column(Integer)
 
