@@ -74,7 +74,6 @@ def run_server():
     run_dash()
 
 if __name__ == '__main__':
-    app.run_server(host='0.0.0.0', port=8050)  # LucasVN
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-server", help="run web server to display graphs",
                         action="store_true", default=False)
@@ -119,4 +118,4 @@ if __name__ == '__main__':
         fill_database(d_df, verbose=args.verbose)
 
     if args.run_server:
-        run_server()
+        run_server(host='127.0.0.1', port=8050)
