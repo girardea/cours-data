@@ -11,9 +11,22 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import pandas as pd
 import datetime as dt
+import json
 
-engine = create_engine('sqlite:///database.db')
+with open('db_settings.json', 'r') as file:
+    dbs = json.load(file)
+
+# Ouverture de la connection vers la bdd
+engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
+                    '/{dbn}'.format(dialect=dbs['dialect'],
+                                    driver=dbs['driver'],
+                                    user=dbs['username'],
+                                    pwd=dbs['password'],
+                                    host=dbs['host'],
+                                    port=dbs['port'],
+                                    dbn=dbs['database']))
 Session = sessionmaker(bind=engine)
+print(engine.table_names())
 
 Base = declarative_base()
 
@@ -43,7 +56,7 @@ class Ligne(Base):
 
 class Trajet(Base):
     __tablename__ = 'trajet'
-    # id_trajet = Column(BigInteger, primary_key=True, autoincrement=True)
+    id_trajet = Column(BigInteger, primary_key=True, autoincrement=True)
 
     id_vehicule = Column(BigInteger, ForeignKey('vehicule.id_vehicule'))
     id_ligne = Column(BigInteger, ForeignKey('ligne.id_ligne'))
