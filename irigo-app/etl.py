@@ -121,7 +121,8 @@ def test(d_df):
         for c in df.columns:
             # ID non vides
             if c in ['id_ligne', 'id_arret', 'id_vehicule']:
-                if not df[c].isnull().all():
+                if df[c].isnull().any():
+                    print(df.loc[df[c].isnull()])
                     msg = "{} should always be non-empty.".format(c)
                     raise ValueError(msg)
             # latitude dans les bornes angevines
@@ -169,11 +170,16 @@ def fill_database(d_df, verbose=False):
 
     connection = engine.connect()
 
+    print(d_df['etape'])
+
     # Ajout des IDs dans les dataframes
     d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
     d_df['etape'] = add_index(d_df['etape'], 'etape', 'id_etape', engine)
 
     d_df['etape']['id_trajet'] = d_df['trajet']['id_trajet']
+
+    print(d_df['etape'])
+    tata
 
     # for key, val in d_df.items():
     #     print(key)
