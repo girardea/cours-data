@@ -90,15 +90,16 @@ def create_dataframes(d):
 
     etape = pd.DataFrame({
         'id_arret': id_arret,
-        'heure_arret_theorique': harret,
+        'heure_arret_estimee': harret,
         'ecart': ecart,
         'record_timestamp': record_timestamp
     })
 
     etape['record_timestamp'] = pd.to_datetime(etape['record_timestamp'])
+    etape['heure_arret_estimee'] = pd.to_datetime(etape['heure_arret_estimee'])
 
     def transfo(row):
-        return row['record_timestamp'] + dt.timedelta(seconds=row['ecart'])
+        return row['heure_arret_estimee'] - dt.timedelta(seconds=row['ecart'])
 
     etape['heure_arret_theorique'] = etape.apply(transfo, axis='columns')
 
@@ -158,17 +159,23 @@ def fill_database(d_df, verbose=False):
 
     connection = engine.connect()
 
-    # Exports des dataframes
+    # Ajout des IDs dans les dataframes
+    d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
+    d_df['etape'] = add_index(d_df['etape'], 'etape', 'id_etape', engine)
+
+    d_df['etape']['id_trajet'] = d_df['trajet']['id_trajet']
+
+    # for key, val in d_df.items():
+    #     print(key)
+    #     print(val.head())
+
+    # Export des dataframes
     for tablename, df in d_df.items():
         if verbose:
             print(tablename)
 
         # Count inserts in database
         nb_inserts = 0
-        
-        # Ajouter l'ID automatique pour trajet et etape
-        if tablename in ['trajet', 'etape']:
-            df = add_index(df, tablename, 'id_' + tablename, engine)
 
         # Ecriture en base
         for idx, row in df.iterrows():
