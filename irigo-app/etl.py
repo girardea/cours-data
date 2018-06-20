@@ -13,9 +13,8 @@ import requests
 
 import json
 
-# sql
-from sqlalchemy import create_engine
-
+# Local imports
+import utils
 
 def download():
     # Pour lancer une requête GET, c'est ultra-simple : on utilise `requests.get(url)`.
@@ -155,25 +154,15 @@ def add_index(df, tablename, indexname, engine):
 def fill_database(d_df, verbose=False):
     print("Filling database")
 
-    with open('db_settings.json', 'r') as file:
-        dbs = json.load(file)
+    engine = utils.create_engine(flavor='sqlite')
 
-    # Ouverture de la connection vers la bdd
-    engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
-                           '/{dbn}'.format(dialect=dbs['dialect'],
-                                           driver=dbs['driver'],
-                                           user=dbs['username'],
-                                           pwd=dbs['password'],
-                                           host=dbs['host'],
-                                           port=dbs['port'],
-                                           dbn=dbs['database']))
     connection = engine.connect()
 
     # Exports des dataframes
     for tablename, df in d_df.items():
         if verbose:
             print(tablename)
-        
+
         # Count inserts in database
         nb_inserts = 0
         
