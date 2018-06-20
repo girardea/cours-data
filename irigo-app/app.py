@@ -10,7 +10,9 @@ import argparse
 # from db import create_database
 from dataviz import run_dash
 
-# from etl import download, create_dataframes, test_dataframes, fill_database
+from db import create_database, drop_database
+
+from etl import download, create_dataframes, test, fill_database
 
 def fetch(verbose=False, directory="./data"):
     """Requête sur l'API data.angers.fr et stockage dans un fichier JSON"""
@@ -74,8 +76,10 @@ def run_server():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-server", help="run web server to display graphs",
-                        action="store_true", default=True)
+                        action="store_true", default=False)
     parser.add_argument("--create-db", help="create database",
+                        action="store_true", default=False)
+    parser.add_argument("--drop-db", help="drops all tables in database",
                         action="store_true", default=False)
     parser.add_argument("--fetch", help="fetches API and dumps in json file",
                         action="store_true", default=False)
@@ -93,6 +97,11 @@ if __name__ == '__main__':
         if args.verbose:
             print("--> Creating database")
         create_database()
+
+    if args.drop_db:
+        if args.verbose:
+            print("--> Dropping all tables in database")
+        drop_database()
     
     if args.fetch:
         fetch(verbose=args.verbose)
@@ -106,7 +115,7 @@ if __name__ == '__main__':
         d_df = create_dataframes(d)
 
         # On teste les colonnes (types, aberrations, etc.)
-        test_dataframes(d_df)
+        test(d_df)
 
         # On rentre ces informations dans la DB
         fill_database(d_df)
