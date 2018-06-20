@@ -11,6 +11,8 @@ import pandas as pd
 # Pour faire des requêtes GET et POST
 import requests
 
+import json
+
 # sql
 from sqlalchemy import create_engine
 
@@ -49,7 +51,7 @@ def create_dataframes(d):
     type_vehicule = [elem['fields']['type'] for elem in d]
     etat_vehicule = [elem['fields']['etat'] for elem in d]
 
-    bus = pd.DataFrame({
+    vehicule = pd.DataFrame({
         'id_vehicule': id_vehicule,
         'type_vehicule': type_vehicule,
         'etat_vehicule': etat_vehicule
@@ -103,7 +105,7 @@ def create_dataframes(d):
 
     d_df =  {
         'arret': arret,
-        'bus': bus,
+        'vehicule': vehicule,
         'ligne': ligne,
         'trajet': trajet,
         'etape': etape
@@ -151,8 +153,22 @@ def add_index(df, tablename, indexname, engine):
     return df
 
 def fill_database(d_df):
+    print("Filling database")
+
+    with open('db_settings.json', 'r') as file:
+        dbs = json.load(file)
+
+    print(dbs)
     # Ouverture de la connection vers la bdd
-    engine = create_engine("sqlite:///database.db")
+    engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
+                        '/{dbn}'.format(dialect=dbs['dialect'],
+                                        driver=dbs['driver'],
+                                        user=dbs['username'],
+                                        pwd=dbs['password'],
+                                        host=dbs['host'],
+                                        port=dbs['port'],
+                                        dbn=dbs['database']))
+    print(engine.table_names())
     connection = engine.connect()
 
     # Table arret
@@ -165,12 +181,13 @@ def fill_database(d_df):
     ligne.to_sql('ligne', connection, if_exists='replace', index=False)
 
     # Table trajet
-    trajet = add_index(trajet, 'trajet', 'id_trajet', engine)
+    #trajet = add_index(trajet, 'trajet', 'id_trajet', engine)
     trajet.to_sql('trajet', connection, if_exists='append', index=False)
 
     # Table etape
-    etape = add_index(etape, 'etape', 'id_etape', engine)
+    #etape = add_index(etape, 'etape', 'id_etape', engine)
     etape.to_sql('etape', connection, if_exists='append', index=False)
+    print(engine.table_names())
 
     # Fermeture connection
     connection.close()
