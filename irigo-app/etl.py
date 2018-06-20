@@ -111,6 +111,23 @@ def create_dataframes(d):
 
     return d_df
 
+def test(df):
+    try:
+        result = True
+        for c in df.columns:
+            if ('id_ligne' or 'id_arret' or 'id_vehicule')  in c:
+                if not df[c].isnull().all():
+                    result = False
+            if 'latitude' in c:
+                if not (df[c] > 45).all():
+                    result = False
+            if 'longitude' in c:
+                if not(df[c] < 1).all():
+                    result = False
+        assert result 
+    except Exception as e:
+        print(e)
+    result = True    
 
 def add_index(df, tablename, indexname, engine):
     """Ajoute une nouvelle colonne avec l'auto-incrément"""
