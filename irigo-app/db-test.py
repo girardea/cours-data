@@ -31,9 +31,9 @@ ligne1 = Ligne(id_ligne=1, nom_ligne='MURS ERIGNE <> ADEZIERE SALETTE', num_lign
 
 trajet1 = Trajet(id_trajet=1, id_vehicule=1, id_ligne=1, latitude=-0.59608549, longitude=47.511559, destination="AVRILLE ADEZIERE")
 
-etape1 = Etape(id_etape=1, id_trajet=1, id_arret=1, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 32, 00), heure_arret_reelle=dt.datetime(2018, 6, 18, 16, 33, 00), ecart=60)
-etape2 = Etape(id_etape=2, id_trajet=1, id_arret=2, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 40, 00), heure_arret_reelle=dt.datetime(2018, 6, 18, 16, 42, 00), ecart=120)
-etape3 = Etape(id_etape=3, id_trajet=1, id_arret=3, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 55, 00), heure_arret_reelle=dt.datetime(2018, 6, 18, 16, 58, 00), ecart=180)
+etape1 = Etape(id_etape=1, id_trajet=1, id_arret=1, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 32, 00), heure_arret_estimee=dt.datetime(2018, 6, 18, 16, 33, 00), ecart=60)
+etape2 = Etape(id_etape=2, id_trajet=1, id_arret=2, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 40, 00), heure_arret_estimee=dt.datetime(2018, 6, 18, 16, 42, 00), ecart=120)
+etape3 = Etape(id_etape=3, id_trajet=1, id_arret=3, heure_arret_theorique=dt.datetime(2018, 6, 18, 16, 55, 00), heure_arret_estimee=dt.datetime(2018, 6, 18, 16, 58, 00), ecart=180)
 
 session = Session()
 
