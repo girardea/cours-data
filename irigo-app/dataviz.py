@@ -14,6 +14,9 @@ import math
 from plotly.offline import init_notebook_mode, iplot
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# Modules internes
+from db import Session, Trajet
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
 
 def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
@@ -48,15 +51,11 @@ def get_dash():
     # Instanciation du Dash
     app = dash.Dash()
 
-    # Récupération de la db
-    engine = create_engine('sqlite:///database.db')
-
-    # Stockage de la db dans la RAM
-    Session = sessionmaker(bind=engine)
+    # Ouverture d'une session vers la DB
     session = Session()
 
     # Récupération des trajets
-    # session.query(Trajet).all()
+    trajets = session.query(Trajet).all()
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
@@ -65,17 +64,17 @@ def get_dash():
     app.layout = html.Div([
         html.H1('Irigo app'),
         dcc.Graph(
-            id='life-exp-vs-gdp',
+            id='map',
             figure={
                 'data': [
                     go.Scattermapbox(
-                    lat=['47.51151'],
-                    lon=['-0.59615'],
+                    lat=[trajet.latitude for trajet in trajets],
+                    lon=[trajet.longitude for trajet in trajets],
                     mode='markers',
                     marker=dict(
                         size=9
                     ),
-                    text=["test"],
+                    text=[trajet.destination for trajet in trajets],
                 )
                 ],
                 'layout': go.Layout(
@@ -100,15 +99,9 @@ def get_dash():
 
 def run_dash():
     app = get_dash()
-    #app.run_server(debug=True)
-    app.run_server(host='0.0.0.0', port=8383)
-    fig = dict(data=data, layout=layout)
-    iplot(fig, filename='Multiple Mapbox')
+    app.run_server(debug=True)
+    #app.run_server(host='0.0.0.0', port=8383)
 
 # Démarrage de l'app
 if __name__== '__main__':
-    app = get_dash()
-    #app.run_server(debug=True) on localhost
-    app.run_server(host='0.0.0.0', port=8383)
-    fig = dict(data=data, layout=layout)
-    iplot(fig, filename='Multiple Mapbox')
+    run_dash()
