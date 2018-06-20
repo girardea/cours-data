@@ -158,7 +158,6 @@ def fill_database(d_df):
     with open('db_settings.json', 'r') as file:
         dbs = json.load(file)
 
-    print(dbs)
     # Ouverture de la connection vers la bdd
     engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
                         '/{dbn}'.format(dialect=dbs['dialect'],
@@ -168,26 +167,23 @@ def fill_database(d_df):
                                         host=dbs['host'],
                                         port=dbs['port'],
                                         dbn=dbs['database']))
-    print(engine.table_names())
     connection = engine.connect()
 
-    # Table arret
-    arret.to_sql('arret', connection, if_exists='replace', index=False)
+    # Exports des dataframes
+    for tablename, df in d_df.items():
+        
+        # Ajouter l'ID automatique pour trajet et etape
+        if tablename in ['trajet', 'etape']:
+            df = add_index(df, tablename, 'id_' + tablename, engine)
 
-    # Table vehicule
-    vehicule.to_sql('vehicule', connection, if_exists='replace', index=False)
+        # Ecriture en base
+        for row in df.iterrows():
 
-    # Table ligne
-    ligne.to_sql('ligne', connection, if_exists='replace', index=False)
-
-    # Table trajet
-    #trajet = add_index(trajet, 'trajet', 'id_trajet', engine)
-    trajet.to_sql('trajet', connection, if_exists='append', index=False)
-
-    # Table etape
-    #etape = add_index(etape, 'etape', 'id_etape', engine)
-    etape.to_sql('etape', connection, if_exists='append', index=False)
-    print(engine.table_names())
+            try:
+                row.to_sql(tablename, connection, if_exists='append',
+                           index=False)
+            except:
+                pass
 
     # Fermeture connection
     connection.close()
