@@ -16,9 +16,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
 
-init_notebook_mode(connected=True)
-
-def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
+def get_mapbox_access_token(folderpath='.', filename="../mapbox.txt"):
     import os
     
     with open(os.path.join(folderpath, filename), 'r') as file:
@@ -46,59 +44,69 @@ def midpoint(lat1, lon1, lat2, lon2):
 
     return[round(math.degrees(lat3), 2), round(math.degrees(lon3), 2)]
 
-# Instanciation du Dash
-app = dash.Dash()
+def get_dash():
+    # Instanciation du Dash
+    app = dash.Dash()
 
-# Récupération de la db
-engine = create_engine('sqlite:///database.db')
+    # Récupération de la db
+    engine = create_engine('sqlite:///database.db')
 
-# Stockage de la db dans la RAM
-Session = sessionmaker(bind=engine)
-session = Session()
+    # Stockage de la db dans la RAM
+    Session = sessionmaker(bind=engine)
+    session = Session()
 
-# Récupération des trajets
-# session.query(Trajet).all()
+    # Récupération des trajets
+    # session.query(Trajet).all()
 
-# Récupération du token mapbox
-mapbox_access_token = get_mapbox_access_token()
+    # Récupération du token mapbox
+    mapbox_access_token = get_mapbox_access_token()
 
-# Contenu de l'app
-app.layout = html.Div([
-    html.H1('Irigo app'),
-    dcc.Graph(
-        id='life-exp-vs-gdp',
-        figure={
-            'data': [
-                go.Scattermapbox(
-                lat=['47.51151'],
-                lon=['-0.59615'],
-                mode='markers',
-                marker=dict(
-                    size=9
-                ),
-                text=["test"],
-            )
-            ],
-            'layout': go.Layout(
-                autosize=True,
-                hovermode='closest',
-                mapbox=dict(
-                    accesstoken=mapbox_access_token,
-                    bearing=0,
-                    center=dict(
-                        lat=47.51151,
-                        lon=-0.59615
+    # Contenu de l'app
+    app.layout = html.Div([
+        html.H1('Irigo app'),
+        dcc.Graph(
+            id='life-exp-vs-gdp',
+            figure={
+                'data': [
+                    go.Scattermapbox(
+                    lat=['47.51151'],
+                    lon=['-0.59615'],
+                    mode='markers',
+                    marker=dict(
+                        size=9
                     ),
-                    pitch=0,
-                    zoom=10
-                ),
-            )
-        }
-    )
-], style={'text-align': 'center'})
+                    text=["test"],
+                )
+                ],
+                'layout': go.Layout(
+                    autosize=True,
+                    hovermode='closest',
+                    mapbox=dict(
+                        accesstoken=mapbox_access_token,
+                        bearing=0,
+                        center=dict(
+                            lat=47.51151,
+                            lon=-0.59615
+                        ),
+                        pitch=0,
+                        zoom=10
+                    ),
+                )
+            }
+        )
+    ], style={'text-align': 'center'})
+
+    return app
+
+def run_dash():
+    app = get_dash()
+    app.run_server(debug=True)
+    fig = dict(data=data, layout=layout)
+    iplot(fig, filename='Multiple Mapbox')
 
 # Démarrage de l'app
 if __name__== '__main__':
+    app = get_dash()
     app.run_server(debug=True)
     fig = dict(data=data, layout=layout)
     iplot(fig, filename='Multiple Mapbox')
