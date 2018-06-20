@@ -118,4 +118,4 @@ if __name__ == '__main__':
         fill_database(d_df, verbose=args.verbose)
 
     if args.run_server:
-        run_server(host='127.0.0.1', port=8050)
+        run_dash()
