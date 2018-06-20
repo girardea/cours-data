@@ -16,7 +16,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
 
-def get_mapbox_access_token(folderpath='.', filename="../mapbox.txt"):
+def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
     import os
     
     with open(os.path.join(folderpath, filename), 'r') as file:

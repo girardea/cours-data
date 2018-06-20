@@ -59,8 +59,8 @@ def create_dataframes(d):
 
     # Ligne
     id_ligne = [elem['fields']['idligne'] for elem in d]
-    nom_ligne = [elem['fields']['nomligne'] for elem in d]
-    num_ligne = [elem['fields']['mnemoligne'] for elem in d]
+    nom_ligne = [elem['fields']['nomligne'] if 'nomligne' in elem['fields'] else "" for elem in d]
+    num_ligne = [elem['fields']['mnemoligne'] if 'mnemoligne' in elem['fields'] else "" for elem in d]
 
     ligne = pd.DataFrame({
         'id_ligne': id_arret,
@@ -73,7 +73,7 @@ def create_dataframes(d):
     id_ligne = [elem['fields']['idligne'] for elem in d]
     latitude = [elem['fields']['coordonnees'][0] for elem in d]
     longitude = [elem['fields']['coordonnees'][1] for elem in d]
-    destination = [elem['fields']['dest'] for elem in d]
+    destination = [elem['fields']['dest'] if 'dest' in elem['fields'] else "" for elem in d]
 
     trajet = pd.DataFrame({
         'id_vehicule': id_vehicule,
@@ -152,7 +152,7 @@ def add_index(df, tablename, indexname, engine):
 
     return df
 
-def fill_database(d_df):
+def fill_database(d_df, verbose=False):
     print("Filling database")
 
     with open('db_settings.json', 'r') as file:
@@ -160,30 +160,42 @@ def fill_database(d_df):
 
     # Ouverture de la connection vers la bdd
     engine = create_engine('{dialect}+{driver}://{user}:{pwd}@{host}:{port}'
-                        '/{dbn}'.format(dialect=dbs['dialect'],
-                                        driver=dbs['driver'],
-                                        user=dbs['username'],
-                                        pwd=dbs['password'],
-                                        host=dbs['host'],
-                                        port=dbs['port'],
-                                        dbn=dbs['database']))
+                           '/{dbn}'.format(dialect=dbs['dialect'],
+                                           driver=dbs['driver'],
+                                           user=dbs['username'],
+                                           pwd=dbs['password'],
+                                           host=dbs['host'],
+                                           port=dbs['port'],
+                                           dbn=dbs['database']))
     connection = engine.connect()
 
     # Exports des dataframes
     for tablename, df in d_df.items():
+        if verbose:
+            print(tablename)
+        
+        # Count inserts in database
+        nb_inserts = 0
         
         # Ajouter l'ID automatique pour trajet et etape
         if tablename in ['trajet', 'etape']:
             df = add_index(df, tablename, 'id_' + tablename, engine)
 
         # Ecriture en base
-        for row in df.iterrows():
-
+        for idx, row in df.iterrows():
             try:
-                row.to_sql(tablename, connection, if_exists='append',
-                           index=False)
+                row.to_frame().transpose().to_sql(tablename, connection,
+                                                  if_exists='append',
+                                                  index=False)
+                nb_inserts += 1
             except:
                 pass
+
+
+        if verbose:
+            print("--> {} successful inserts in table {}.".format(nb_inserts,
+                                                                  tablename))
+
 
     # Fermeture connection
     connection.close()
