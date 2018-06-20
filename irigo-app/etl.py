@@ -113,22 +113,32 @@ def create_dataframes(d):
 
     return d_df
 
-def test(df):
-    try:
-        result = True
+def test(d_df):
+    """Test d'intégrité et d'abberation sur les données d'entrée"""
+    # boucle sur les DataFrame
+    for key, df in d_df.items():
+        # boucle sur les colonnes des DataFrame
         for c in df.columns:
-            if ('id_ligne' or 'id_arret' or 'id_vehicule')  in c:
+            # ID non vides
+            if c in ['id_ligne', 'id_arret', 'id_vehicule']:
                 if not df[c].isnull().all():
-                    result = False
-            if 'latitude' in c:
+                    msg = "{} should always be non-empty.".format(c)
+                    raise ValueError(msg)
+            # latitude dans les bornes angevines
+            # TODO : ajouter borne max
+            if c == 'latitude':
                 if not (df[c] > 45).all():
-                    result = False
-            if 'longitude' in c:
+                    msg = "Latitudes seem to be off-grid."
+                    raise ValueError(msg)
+            # longitude dans les bornes angevines
+            # TODO : ajouter borne min
+            if c == 'longitude':
                 if not(df[c] < 1).all():
-                    result = False
-        assert result 
-    except Exception as e:
-        print(e) 
+                    msg = "Longitudes seem to be off-grid."
+                    raise ValueError(msg)
+    
+    return
+
 
 def add_index(df, tablename, indexname, engine):
     """Ajoute une nouvelle colonne avec l'auto-incrément"""
