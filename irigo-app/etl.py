@@ -34,7 +34,10 @@ def download():
     return dd
 
 def create_dataframes(d):
-    # Arret
+    """Crée les tables (en mode DataFrame) à parti du résultat de la requête"""
+    """
+    Arret
+    """
     id_arret = [elem['fields']['idarret'] for elem in d]
     nom_arret = [elem['fields']['nomarret'] for elem in d]
     mne_arret = [elem['fields']['mnemoarret'] for elem in d]
@@ -45,7 +48,12 @@ def create_dataframes(d):
         'mne_arret': mne_arret
     })
 
-    # Vehicule
+    # Virer les doublons
+    arret = arret.drop_duplicates(subset=['id_arret'])
+
+    """
+    Vehicule
+    """
     id_vehicule = [elem['fields']['idvh'] for elem in d]
     type_vehicule = [elem['fields']['type'] for elem in d]
     etat_vehicule = [elem['fields']['etat'] for elem in d]
@@ -56,7 +64,12 @@ def create_dataframes(d):
         'etat_vehicule': etat_vehicule
     })
 
-    # Ligne
+    # Note que les véihicules ne peuvent pas être sortis en double
+    assert vehicule['id_vehicule'].nunique() == len(vehicule)
+
+    """
+    Ligne
+    """
     id_ligne = [elem['fields']['idligne'] for elem in d]
     nom_ligne = [elem['fields']['nomligne'] if 'nomligne' in elem['fields'] else "" for elem in d]
     num_ligne = [elem['fields']['mnemoligne'] if 'mnemoligne' in elem['fields'] else "" for elem in d]
@@ -66,6 +79,9 @@ def create_dataframes(d):
         'nom_ligne': nom_ligne,
         'num_ligne': num_ligne
     })
+
+    # Virer les doublons
+    ligne = ligne.drop_duplicates(subset=['id_ligne'])
 
     # Trajet
     id_vehicule = [elem['fields']['idvh'] for elem in d]
@@ -164,22 +180,17 @@ def add_index(df, tablename, indexname, engine):
     return df
 
 def fill_database(d_df, verbose=False):
-    print("Filling database")
+    print("--> Filling in database")
 
     engine = utils.create_engine(flavor='sqlite')
 
     connection = engine.connect()
-
-    print(d_df['etape'])
 
     # Ajout des IDs dans les dataframes
     d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
     d_df['etape'] = add_index(d_df['etape'], 'etape', 'id_etape', engine)
 
     d_df['etape']['id_trajet'] = d_df['trajet']['id_trajet']
-
-    print(d_df['etape'])
-    tata
 
     # for key, val in d_df.items():
     #     print(key)
@@ -201,6 +212,7 @@ def fill_database(d_df, verbose=False):
                                                   index=False)
                 nb_inserts += 1
             except:
+                raise
                 pass
 
 
