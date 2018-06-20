@@ -7,7 +7,7 @@
     propre.
 """
 from sqlalchemy import (Column, Integer, BigInteger, Float, MetaData, Table,
-                        ForeignKey, String, DateTime)
+                        ForeignKey, select, String, DateTime, func)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import pandas as pd
@@ -76,3 +76,27 @@ def create_database():
 
 def drop_database():
     Base.metadata.drop_all(bind=engine)
+
+def check_database():
+    """Affcihe quelques infos sur les tables en base"""
+    connection = engine.connect()
+
+    for tablename in engine.table_names():
+
+        # création de l'objet Table
+        table = Table(tablename, MetaData(), autoload=True,
+                      autoload_with=engine)
+        # nom de la table
+        print("\n*** {} ***\n".format(tablename))
+
+        # nombre de lignes dans la table
+        stmt = select([func.count(table)])
+        nrows = connection.execute(stmt).scalar()
+        print("{} lignes en base.".format(nrows))
+
+        # les premières lignes
+        print("Premières lignes :")
+        stmt = select([table]).limit(5)
+        print(pd.read_sql_query(stmt, connection))
+
+    connection.close()

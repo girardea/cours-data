@@ -10,7 +10,7 @@ import argparse
 # from db import create_database
 from dataviz import run_dash
 
-from db import create_database, drop_database
+from db import create_database, drop_database, check_database
 
 from etl import download, create_dataframes, test, fill_database
 
@@ -81,6 +81,9 @@ if __name__ == '__main__':
                         action="store_true", default=False)
     parser.add_argument("--drop-db", help="drops all tables in database",
                         action="store_true", default=False)
+    parser.add_argument("--check-db", help="gives info about tables in"
+                                           " database",
+                        action="store_true", default=False)
     parser.add_argument("--fetch", help="fetches API and dumps in json file",
                         action="store_true", default=False)
     parser.add_argument("--update", help="queries API and updates database",
@@ -99,6 +102,9 @@ if __name__ == '__main__':
         if args.verbose:
             print("--> Creating database")
         create_database()
+
+    if args.check_db:
+        check_database()
     
     if args.fetch:
         fetch(verbose=args.verbose)
