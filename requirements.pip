@@ -18,7 +18,6 @@ MarkupSafe==1.0
 nbformat==4.4.0
 numpy==1.14.5
 pandas==0.23.1
-pkg-resources==0.0.0
 plotly==2.7.0
 python-dateutil==2.7.3
 pytz==2018.4
