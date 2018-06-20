@@ -74,8 +74,10 @@ def create_dataframes(d):
     nom_ligne = [elem['fields']['nomligne'] if 'nomligne' in elem['fields'] else "" for elem in d]
     num_ligne = [elem['fields']['mnemoligne'] if 'mnemoligne' in elem['fields'] else "" for elem in d]
 
+    # RQ : il y avait une ENORME erreur ici (au sens où j'ai mis 30 minutes
+    # à la trouver...)
     ligne = pd.DataFrame({
-        'id_ligne': id_arret,
+        'id_ligne': id_ligne,
         'nom_ligne': nom_ligne,
         'num_ligne': num_ligne
     })
