@@ -107,6 +107,6 @@ def run_dash():
 # Démarrage de l'app
 if __name__== '__main__':
     app = get_dash()
-    app.run_server(debug=True)
+    app.run_server(debug=True, host='127.0.0.1', port=8050)
     fig = dict(data=data, layout=layout)
     iplot(fig, filename='Multiple Mapbox')
