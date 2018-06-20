@@ -90,18 +90,15 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    if args.run_server:
-        run_server()
+    if args.drop_db:
+        if args.verbose:
+            print("--> Dropping all tables in database")
+        drop_database()
 
     if args.create_db:
         if args.verbose:
             print("--> Creating database")
         create_database()
-
-    if args.drop_db:
-        if args.verbose:
-            print("--> Dropping all tables in database")
-        drop_database()
     
     if args.fetch:
         fetch(verbose=args.verbose)
@@ -118,4 +115,7 @@ if __name__ == '__main__':
         test(d_df)
 
         # On rentre ces informations dans la DB
-        fill_database(d_df)
+        fill_database(d_df, verbose=args.verbose)
+
+    if args.run_server:
+        run_server()
