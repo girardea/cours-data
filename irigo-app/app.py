@@ -7,7 +7,8 @@
 
 import argparse
 
-from db import create_database
+# from db import create_database
+from dataviz import run_dash
 
 # from etl import download, create_dataframes, test_dataframes, fill_database
 
@@ -66,8 +67,14 @@ def fetch(verbose=False, directory="./data"):
     if verbose:
         print("--> Wrote to {}".format(filepath))
 
+def run_server():
+    print('run server')
+    run_dash()
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument("--run-server", help="run web server to display graphs",
+                        action="store_true", default=True)
     parser.add_argument("--create-db", help="create database",
                         action="store_true", default=False)
     parser.add_argument("--fetch", help="fetches API and dumps in json file",
@@ -78,6 +85,9 @@ if __name__ == '__main__':
                         default=False)
     
     args = parser.parse_args()
+
+    if args.run_server:
+        run_server()
 
     if args.create_db:
         if args.verbose:
