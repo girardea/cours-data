@@ -214,7 +214,6 @@ def fill_database(d_df, verbose=False):
                                                   index=False)
                 nb_inserts += 1
             except:
-                raise
                 pass
 
 
