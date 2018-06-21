@@ -97,10 +97,12 @@ def get_dash():
 
     return app
 
-def run_dash():
+def run_dash(docker=False):
     app = get_dash()
-    app.run_server(debug=True)
-    #app.run_server(host='0.0.0.0', port=8383)
+    if docker:
+        app.run_server(host='0.0.0.0', port=8383)
+    else:
+        app.run_server(debug=True)
 
 # Démarrage de l'app
 if __name__== '__main__':
