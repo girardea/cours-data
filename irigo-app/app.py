@@ -7,6 +7,12 @@
 
 import argparse
 
+import glob
+
+import json
+
+import progressbar
+
 # from db import create_database
 from dataviz import run_dash
 
@@ -33,8 +39,7 @@ def fetch(verbose=False, directory="./data"):
     
     r = requests.get("https://data.angers.fr/api/records/1.0/search/",
                      params={
-                         'dataset': 'horaires-theoriques-et-arrets-du-'
-                                    'reseau-irigo-gtfs',
+                         'dataset': 'bus-tram-position-tr',
                          'rows': -1
                      })
 
@@ -88,6 +93,9 @@ if __name__ == '__main__':
                         action="store_true", default=False)
     parser.add_argument("--update", help="queries API and updates database",
                         action="store_true", default=False)
+    parser.add_argument("--reset", help="updates database with JSON files in "
+                                        "'data' subfolder",
+                        action="store_true", default=False)
     parser.add_argument("--verbose", help="verbose mode", action="store_true",
                         default=False)
     parser.add_argument("--docker", help="docker deploy",
@@ -124,6 +132,29 @@ if __name__ == '__main__':
 
         # On rentre ces informations dans la DB
         fill_database(d_df, verbose=args.verbose)
+
+    if args.reset:
+        filenames = glob.glob('data/*.json')
+        bar = progressbar.ProgressBar(max_value=len(filenames))
+        for i, filename in enumerate(filenames):
+            print(filename)
+            with open(filename, 'r') as file:
+                d = json.load(file)
+            
+            # A partir du dictionnaire, on crée les tables
+            # sous la forme de DataFrames
+            d_df = create_dataframes(d['records'])
+
+            # On teste les colonnes (types, aberrations, etc.)
+            test(d_df)
+
+            # On rentre ces informations dans la DB
+            fill_database(d_df, verbose=args.verbose)
+
+            bar.update(i)
+
+        bar.finish()
+
 
     if args.run_server:
         run_dash(args.docker)
