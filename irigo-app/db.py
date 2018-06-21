@@ -59,6 +59,9 @@ class Trajet(Base):
 
     etapes = relationship("Etape")
 
+    def __str__( self ):
+        return 'id:'+str(self.id_trajet)+', id_vehicule:'+str(self.id_vehicule)+', id_ligne:'+str(self.id_ligne)
+
 class Etape(Base):
     __tablename__ = 'etape'
     id_etape = Column(BigInteger, primary_key=True, autoincrement=True)
@@ -69,6 +72,9 @@ class Etape(Base):
     heure_arret_estimee = Column(DateTime)
     record_timestamp = Column(DateTime)
     ecart = Column(Integer)
+
+    def __str__( self ):
+        return 'id:'+str(self.id_etape)+', id_trajet:'+str(self.id_trajet)+', id_arret:'+str(self.id_arret)+', ecart:'+str(self.ecart)
 
     
 def create_database():
