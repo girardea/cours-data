@@ -22,7 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map
+from datavizelements import get_map, get_barh
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -68,16 +68,8 @@ def get_dash():
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
-        html.Div([
-            html.Div(get_map(results, colors), style={'width': '70%', 'float': 'left'}),
-            html.Div([
-                dcc.Markdown(d("""
-                    **Graphique à ajouter**
-
-                    Description du graphique
-                """))
-            ], style={'margin-top': '83px', 'float': 'right', 'width': '30%'})
-        ]),
+        html.Div(get_map(results, colors)),
+        html.Div(get_barh()),
         html.Div([
             dcc.Markdown(d("""
                 **Données par point**
@@ -107,6 +99,8 @@ def get_dash():
 
         df = pd.read_sql_query(query.statement, query.session.bind)
         return generate_table(df)
+
+    app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
     return app
 
