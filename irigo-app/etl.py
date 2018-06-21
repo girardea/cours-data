@@ -86,7 +86,7 @@ def create_dataframes(d):
     ligne = ligne.drop_duplicates(subset=['id_ligne'])
 
     # Trajet
-    id_trajet = [elem['fields']['iddesserte'] for elem in d]
+    # id_trajet = [elem['fields']['iddesserte'] for elem in d]
 
     id_vehicule = [elem['fields']['idvh'] for elem in d]
     id_ligne = [elem['fields']['idligne'] for elem in d]
@@ -95,7 +95,6 @@ def create_dataframes(d):
     destination = [elem['fields']['dest'] if 'dest' in elem['fields'] else "" for elem in d]
 
     trajet = pd.DataFrame({
-        'id_trajet': id_trajet,
         'id_vehicule': id_vehicule,
         'id_ligne': id_ligne,
         'latitude': latitude,
@@ -104,7 +103,7 @@ def create_dataframes(d):
     })
 
     #Note que les trajets ne peuvent pas être sortis en double
-    assert trajet['id_trajet'].nunique() == len(trajet)
+    # assert trajet['id_trajet'].nunique() == len(trajet)
 
     # Etape
     id_arret = [elem['fields']['idarret'] for elem in d]
@@ -195,7 +194,7 @@ def fill_database(d_df, verbose=False):
     connection = engine.connect()
 
     # Ajout des IDs dans les dataframes
-    #d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
+    d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
     d_df['etape'] = add_index(d_df['etape'], 'etape', 'id_etape', engine)
 
     d_df['etape']['id_trajet'] = d_df['trajet']['id_trajet']
