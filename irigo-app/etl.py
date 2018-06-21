@@ -86,6 +86,8 @@ def create_dataframes(d):
     ligne = ligne.drop_duplicates(subset=['id_ligne'])
 
     # Trajet
+    # id_trajet = [elem['fields']['iddesserte'] for elem in d]
+
     id_vehicule = [elem['fields']['idvh'] for elem in d]
     id_ligne = [elem['fields']['idligne'] for elem in d]
     latitude = [elem['fields']['coordonnees'][0] for elem in d]
@@ -99,6 +101,9 @@ def create_dataframes(d):
         'longitude': longitude,
         'destination': destination
     })
+
+    #Note que les trajets ne peuvent pas être sortis en double
+    # assert trajet['id_trajet'].nunique() == len(trajet)
 
     # Etape
     id_arret = [elem['fields']['idarret'] for elem in d]
