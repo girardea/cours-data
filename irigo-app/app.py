@@ -90,6 +90,8 @@ if __name__ == '__main__':
                         action="store_true", default=False)
     parser.add_argument("--verbose", help="verbose mode", action="store_true",
                         default=False)
+    parser.add_argument("--docker", help="docker deploy",
+                        action="store_true", default=False)
     
     args = parser.parse_args()
 
@@ -124,4 +126,5 @@ if __name__ == '__main__':
         fill_database(d_df, verbose=args.verbose)
 
     if args.run_server:
-        run_dash()
+        run_dash(args.docker)
+

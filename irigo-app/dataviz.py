@@ -19,7 +19,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Modules internes
-from db import Session, Trajet
+from db import Session, Trajet, Etape
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
 
 styles = {
@@ -44,11 +44,25 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    trajets = session.query(Trajet).all()
+    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination).select_from(Etape).join(Trajet)
+    colors = []
+
+    for result in results:
+        if result.ecart > 60:
+            color = 'red'
+ 
+        if result.ecart < -60:
+            color = 'purple'
+        
+        if abs(result.ecart) <= 60:
+            color = 'green'
+            
+        colors.append(color)
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
 
+        
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
@@ -110,10 +124,12 @@ def get_dash():
 
     return app
 
-def run_dash():
+def run_dash(docker=False):
     app = get_dash()
-    app.run_server(debug=True)
-    #app.run_server(host='0.0.0.0', port=8383)
+    if docker:
+        app.run_server(host='0.0.0.0', port=8383)
+    else:
+        app.run_server(debug=True)
 
 # Démarrage de l'app
 if __name__== '__main__':
