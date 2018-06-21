@@ -17,7 +17,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Modules internes
-from db import Session, Trajet
+from db import Session, Trajet, Etape
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
 
 def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
@@ -36,11 +36,25 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    trajets = session.query(Trajet).all()
+    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination).select_from(Etape).join(Trajet)
+    colors = []
+
+    for result in results:
+        if result.ecart > 60:
+            color = 'red'
+ 
+        if result.ecart < -60:
+            color = 'purple'
+        
+        if abs(result.ecart) <= 60:
+            color = 'green'
+            
+        colors.append(color)
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
 
+        
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app'),
@@ -49,13 +63,14 @@ def get_dash():
             figure={
                 'data': [
                     go.Scattermapbox(
-                    lat=[trajet.latitude for trajet in trajets],
-                    lon=[trajet.longitude for trajet in trajets],
+                    lat=[result.latitude for result in results],
+                    lon=[result.longitude for result in results],
                     mode='markers',
                     marker=dict(
-                        size=9
+                        size=9,
+                        color=colors
                     ),
-                    text=[trajet.destination for trajet in trajets],
+                    text=[result.ecart for result in results],
                 )
                 ],
                 'layout': go.Layout(
@@ -65,8 +80,8 @@ def get_dash():
                         accesstoken=mapbox_access_token,
                         bearing=0,
                         center=dict(
-                            lat=np.mean([trajet.latitude for trajet in trajets]),
-                            lon=np.mean([trajet.longitude for trajet in trajets])
+                            lat=np.mean([result.latitude for result in results]),
+                            lon=np.mean([result.longitude for result in results])
                         ),
                         pitch=0,
                         zoom=10
