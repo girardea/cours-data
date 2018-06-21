@@ -44,7 +44,7 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination).select_from(Etape).join(Trajet)
+    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet).select_from(Etape).join(Trajet)
     colors = []
 
     for result in results:
@@ -61,7 +61,6 @@ def get_dash():
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
-
         
     # Contenu de l'app
     app.layout = html.Div([
@@ -72,14 +71,15 @@ def get_dash():
                 figure={
                     'data': [
                         go.Scattermapbox(
-                            lat=[trajet.latitude for trajet in trajets],
-                            lon=[trajet.longitude for trajet in trajets],
+                            lat=[trajet.latitude for trajet in results],
+                            lon=[trajet.longitude for trajet in results],
                             mode='markers',
                             marker=dict(
-                                size=9
+                                size=9,
+                                color=colors
                             ),
-                            text=[trajet.destination for trajet in trajets],
-                            customdata=[trajet.id_trajet for trajet in trajets]
+                            text=[trajet.destination for trajet in results],
+                            customdata=[trajet.id_trajet for trajet in results]
                         )
                     ],
                     'layout': go.Layout(
@@ -90,8 +90,8 @@ def get_dash():
                             accesstoken=mapbox_access_token,
                             bearing=0,
                             center=dict(
-                                lat=np.mean([trajet.latitude for trajet in trajets]),
-                                lon=np.mean([trajet.longitude for trajet in trajets])
+                                lat=np.mean([trajet.latitude for trajet in results]),
+                                lon=np.mean([trajet.longitude for trajet in results])
                             ),
                             pitch=0,
                             zoom=11
@@ -114,8 +114,6 @@ def get_dash():
         dash.dependencies.Output('click-data', 'children'),
         [dash.dependencies.Input('map', 'clickData')])
     def display_click_data(clickData):
-        print(clickData['points'][0]['customdata'])
-
         # numéro de ligne
         # prochain arrêt
         # retard
