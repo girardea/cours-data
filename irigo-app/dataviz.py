@@ -13,20 +13,15 @@ import plotly.graph_objs as go
 import math
 import json
 
+from flask import make_response
 from textwrap import dedent as d
 from plotly.offline import init_notebook_mode, iplot
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Modules internes
-from db import Session, Trajet, Etape
+from db import Session, Trajet, Etape, Ligne
 # from db import Arret, Vehicule, Ligne, Trajet, Etape
-
-styles = {
-    'pre': {
-        'border': 'thin lightgrey solid'
-    }
-}
 
 def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
     import os
@@ -35,6 +30,17 @@ def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
         s = file.read()
     
     return s
+
+def generate_table(dataframe, max_rows=10):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))]
+    )
 
 def get_dash():
     # Instanciation du Dash
@@ -106,8 +112,8 @@ def get_dash():
 
                 Cliquez sur un point pour afficher les données relatives à celui-ci.
             """)),
-            html.Pre(id='click-data', style=styles['pre']),
-        ], style={'margin-top': '118px'}),
+            html.Table(id='click-data')
+        ], style={'margin-top': '118px'})
     ])
 
     @app.callback(
@@ -117,8 +123,14 @@ def get_dash():
         # numéro de ligne
         # prochain arrêt
         # retard
+        
+        # Ouverture d'une session vers la DB
+        session = Session()
+        query = session.query(Ligne.nom_ligne, Ligne.num_ligne).select_from(Trajet).join(Ligne).filter(Trajet.id_trajet==clickData['points'][0]['customdata'])
+        session.close()
 
-        return json.dumps(clickData, indent=2)
+        df = pd.read_sql_query(query.statement, query.session.bind)
+        return generate_table(df)
 
     return app
 
