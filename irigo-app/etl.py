@@ -16,6 +16,8 @@ import json
 # Local imports
 import utils
 
+from db import Arret, Ligne, Session, Vehicule
+
 def download():
     # Pour lancer une requête GET, c'est ultra-simple : on utilise `requests.get(url)`.
     #
@@ -191,41 +193,53 @@ def fill_database(d_df, verbose=False):
 
     engine = utils.create_engine(flavor='sqlite')
 
-    connection = engine.connect()
-
     # Ajout des IDs dans les dataframes
     d_df['trajet'] = add_index(d_df['trajet'], 'trajet', 'id_trajet', engine)
     d_df['etape'] = add_index(d_df['etape'], 'etape', 'id_etape', engine)
 
     d_df['etape']['id_trajet'] = d_df['trajet']['id_trajet']
 
-    # for key, val in d_df.items():
-    #     print(key)
-    #     print(val.head())
+    def filter_id(df, col, dcol):
+        """Elimine de la DataFrame les éléments de col déjà présents en base"""
+        session = Session()
+
+        ids = session.query(dcol) \
+                     .filter(dcol.in_(df[col])) \
+                     .all()
+
+        session.close()
+
+        ids = [idx[0] for idx in ids]
+        c = ~df[col].isin(ids)
+
+        return df.loc[c]
+
+    """
+    Suppression des arrêts déjà présents en base
+    """
+    d_df['arret'] = filter_id(d_df['arret'], 'id_arret', Arret.id_arret)
+
+    """
+    Suppression des véhicules déjà présents en base
+    """
+    d_df['vehicule'] = filter_id(d_df['vehicule'], 'id_vehicule',
+                                 Vehicule.id_vehicule)
+
+    """
+    Suppression des lignes déjà présentes en base
+    """
+    d_df['ligne'] = filter_id(d_df['ligne'], 'id_ligne',
+                              Ligne.id_ligne)
+
+    connection = engine.connect()
 
     # Export des dataframes
     for tablename, df in d_df.items():
         if verbose:
             print(tablename)
 
-        # Count inserts in database
-        nb_inserts = 0
-
-        # Ecriture en base
-        for idx, row in df.iterrows():
-            try:
-                row.to_frame().transpose().to_sql(tablename, connection,
-                                                  if_exists='append',
-                                                  index=False)
-                nb_inserts += 1
-            except:
-                pass
-
-
-        if verbose:
-            print("--> {} successful inserts in table {}.".format(nb_inserts,
-                                                                  tablename))
-
+        df.to_sql(tablename, connection, if_exists='append',
+                  index=False)
 
     # Fermeture connection
     connection.close()

@@ -50,7 +50,10 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet).select_from(Etape).join(Trajet)
+    lastUts = session.query(Etape.record_timestamp).order_by(Etape.id_etape.desc()).first()[0]
+    print(lastUts)
+    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet).select_from(Etape).join(Trajet).filter(Etape.record_timestamp == lastUts)
+
     colors = []
 
     for result in results:
