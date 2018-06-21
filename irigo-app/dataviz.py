@@ -20,8 +20,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Modules internes
-from db import Session, Trajet, Etape, Ligne
-# from db import Arret, Vehicule, Ligne, Trajet, Etape
+from db import Session, Trajet, Etape, Ligne, Vehicule
 
 def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
     import os
@@ -79,40 +78,49 @@ def get_dash():
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
         html.Div([
-            dcc.Graph(
-                id='map',
-                figure={
-                    'data': [
-                        go.Scattermapbox(
-                            lat=[trajet.latitude for trajet in results],
-                            lon=[trajet.longitude for trajet in results],
-                            mode='markers',
-                            marker=dict(
-                                size=9,
-                                color=colors
+            html.Div([
+                dcc.Graph(
+                    id='map',
+                    figure={
+                        'data': [
+                            go.Scattermapbox(
+                                lat=[trajet.latitude for trajet in results],
+                                lon=[trajet.longitude for trajet in results],
+                                mode='markers',
+                                marker=dict(
+                                    size=9,
+                                    color=colors
+                                ),
+                                text=[trajet.destination for trajet in results],
+                                customdata=[trajet.id_trajet for trajet in results]
+                            )
+                        ],
+                        'layout': go.Layout(
+                            height=700,
+                            autosize=True,
+                            hovermode='closest',
+                            mapbox=dict(
+                                accesstoken=mapbox_access_token,
+                                bearing=0,
+                                center=dict(
+                                    lat=np.mean([trajet.latitude for trajet in results]),
+                                    lon=np.mean([trajet.longitude for trajet in results])
+                                ),
+                                pitch=0,
+                                zoom=11
                             ),
-                            text=[trajet.destination for trajet in results],
-                            customdata=[trajet.id_trajet for trajet in results]
                         )
-                    ],
-                    'layout': go.Layout(
-                        height=700,
-                        autosize=True,
-                        hovermode='closest',
-                        mapbox=dict(
-                            accesstoken=mapbox_access_token,
-                            bearing=0,
-                            center=dict(
-                                lat=np.mean([trajet.latitude for trajet in results]),
-                                lon=np.mean([trajet.longitude for trajet in results])
-                            ),
-                            pitch=0,
-                            zoom=11
-                        ),
-                    )
-                }
-            )
-        ], style={'width': '75%', 'float': 'left'}),
+                    }
+                )
+            ], style={'width': '70%', 'float': 'left'}),
+            html.Div([
+                dcc.Markdown(d("""
+                    **Graphique à ajouter**
+
+                    Description du graphique
+                """))
+            ], style={'margin-top': '83px', 'float': 'right', 'width': '30%'})
+        ]),
         html.Div([
             dcc.Markdown(d("""
                 **Données par point**
@@ -120,20 +128,24 @@ def get_dash():
                 Cliquez sur un point pour afficher les données relatives à celui-ci.
             """)),
             html.Table(id='click-data')
-        ], style={'margin-top': '118px'})
+        ], style={'display': 'inline-block', 'width': '100%', 'margin-left': '78px'})
     ])
 
     @app.callback(
         dash.dependencies.Output('click-data', 'children'),
         [dash.dependencies.Input('map', 'clickData')])
     def display_click_data(clickData):
+        # nom de ligne
         # numéro de ligne
         # prochain arrêt
         # retard
         
         # Ouverture d'une session vers la DB
         session = Session()
-        query = session.query(Ligne.nom_ligne, Ligne.num_ligne).select_from(Trajet).join(Ligne).filter(Trajet.id_trajet==clickData['points'][0]['customdata'])
+        print(clickData['points'])
+        query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
+                       .select_from(Trajet).join(Ligne).join(Vehicule) \
+                       .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
         session.close()
 
         df = pd.read_sql_query(query.statement, query.session.bind)
