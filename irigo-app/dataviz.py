@@ -22,13 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
-    import os
-    
-    with open(os.path.join(folderpath, filename), 'r') as file:
-        s = file.read()
-    
-    return s
+from datavizelements import get_map
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -70,49 +64,12 @@ def get_dash():
             color = 'green'
             
         colors.append(color)
-
-    # Récupération du token mapbox
-    mapbox_access_token = get_mapbox_access_token()
         
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
         html.Div([
-            html.Div([
-                dcc.Graph(
-                    id='map',
-                    figure={
-                        'data': [
-                            go.Scattermapbox(
-                                lat=[trajet.latitude for trajet in results],
-                                lon=[trajet.longitude for trajet in results],
-                                mode='markers',
-                                marker=dict(
-                                    size=9,
-                                    color=colors
-                                ),
-                                text=[trajet.destination for trajet in results],
-                                customdata=[trajet.id_trajet for trajet in results]
-                            )
-                        ],
-                        'layout': go.Layout(
-                            height=700,
-                            autosize=True,
-                            hovermode='closest',
-                            mapbox=dict(
-                                accesstoken=mapbox_access_token,
-                                bearing=0,
-                                center=dict(
-                                    lat=np.mean([trajet.latitude for trajet in results]),
-                                    lon=np.mean([trajet.longitude for trajet in results])
-                                ),
-                                pitch=0,
-                                zoom=11
-                            ),
-                        )
-                    }
-                )
-            ], style={'width': '70%', 'float': 'left'}),
+            html.Div(get_map(results, colors), style={'width': '70%', 'float': 'left'}),
             html.Div([
                 dcc.Markdown(d("""
                     **Graphique à ajouter**
