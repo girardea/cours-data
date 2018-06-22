@@ -22,7 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map_figure, get_barh
+from datavizelements import get_map_figure, get_barh, get_colors
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -48,33 +48,24 @@ def get_dash():
                      .order_by(Etape.record_timestamp.desc()) \
                      .first()[0]
     results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude,
-                            Trajet.destination, Trajet.id_trajet) \
-                     .select_from(Etape).join(Trajet) \
+                            Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne) \
+                     .select_from(Etape).join(Trajet).join(Ligne) \
                      .filter(Etape.record_timestamp == lastUts)
-    print(lastUts)
-    print("{} points.".format(len(results.all())))
-    colors = []
 
-    for result in results:
-        if result.ecart > 60:
-            color = 'red'
- 
-        if result.ecart < -60:
-            color = 'purple'
-        
-        if abs(result.ecart) <= 60:
-            color = 'green'
-            
-        colors.append(color)
-        
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
         html.Div(get_barh(lastUts)),
+        html.Div([
+            dcc.Dropdown(
+                id='select-ligne',
+                options=[{'label': trajet.nom_ligne, 'value': trajet.id_ligne} for trajet in results]
+            )
+        ]),
         html.Div(
             dcc.Graph(
                 id='map',
-                figure=get_map_figure(results, colors)
+                figure=get_map_figure(results, get_colors(results))
             )),
         html.Div([
             dcc.Markdown(d("""
@@ -94,23 +85,39 @@ def get_dash():
         # numéro de ligne
         # prochain arrêt
         # retard
-
-        if clickData is None:
-            return
-        
         # Ouverture d'une session vers la DB
         session = Session()
 
-        query = session.query(Ligne.nom_ligne, Ligne.num_ligne,
-                              Vehicule.type_vehicule, Vehicule.etat_vehicule) \
+        if clickData:
+            query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
                        .select_from(Trajet).join(Ligne).join(Vehicule) \
-                       .filter_by(id_trajet=clickData['points'][0]['customdata'])
+                       .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
+        else:
+            query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
+                       .select_from(Trajet).join(Ligne).join(Vehicule)
+        session.close()
 
         df = pd.read_sql_query(query.statement, query.session.bind)
 
         session.close()
         
         return generate_table(df)
+
+    @app.callback(
+        dash.dependencies.Output('map', 'figure'),
+        [dash.dependencies.Input('select-ligne', 'value')])
+    def update_graph(value):
+        session = Session()
+        print(value)
+        if value == None:
+            lastUts = session.query(Etape.record_timestamp).order_by(Etape.id_etape.desc()).first()[0]
+            results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne).select_from(Etape).join(Trajet).join(Ligne).filter(Etape.record_timestamp == lastUts)
+        else:
+            lastUts = session.query(Etape.record_timestamp).order_by(Etape.id_etape.desc()).first()[0]
+            results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne).select_from(Etape).join(Trajet).join(Ligne).filter(Etape.record_timestamp == lastUts).filter(Trajet.id_ligne == value)
+        session.close()
+
+        return get_map_figure(results, get_colors(results))
 
     app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
