@@ -22,7 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map, get_barh
+from datavizelements import get_map_figure, get_barh
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -43,14 +43,16 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
+    # Qui est celui qui a mis order_by id_etape ?!?
     lastUts = session.query(Etape.record_timestamp) \
-                     .order_by(Etape.id_etape.desc()) \
+                     .order_by(Etape.record_timestamp.desc()) \
                      .first()[0]
     results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude,
                             Trajet.destination, Trajet.id_trajet) \
                      .select_from(Etape).join(Trajet) \
                      .filter(Etape.record_timestamp == lastUts)
-
+    print(lastUts)
+    print("{} points.".format(len(results.all())))
     colors = []
 
     for result in results:
@@ -68,8 +70,12 @@ def get_dash():
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
-        html.Div(get_map(results, colors)),
-        html.Div(get_barh()),
+        html.Div(get_barh(lastUts)),
+        html.Div(
+            dcc.Graph(
+                id='map',
+                figure=get_map_figure(results, colors)
+            )),
         html.Div([
             dcc.Markdown(d("""
                 **Données par point**
@@ -88,16 +94,22 @@ def get_dash():
         # numéro de ligne
         # prochain arrêt
         # retard
+
+        if clickData is None:
+            return
         
         # Ouverture d'une session vers la DB
         session = Session()
-        print(clickData['points'])
-        query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
+
+        query = session.query(Ligne.nom_ligne, Ligne.num_ligne,
+                              Vehicule.type_vehicule, Vehicule.etat_vehicule) \
                        .select_from(Trajet).join(Ligne).join(Vehicule) \
-                       .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
-        session.close()
+                       .filter_by(id_trajet=clickData['points'][0]['customdata'])
 
         df = pd.read_sql_query(query.statement, query.session.bind)
+
+        session.close()
+        
         return generate_table(df)
 
     app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
