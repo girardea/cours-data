@@ -22,7 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map_figure, get_barh
+from datavizelements import get_map_figure, get_barh, get_colors
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -52,20 +52,6 @@ def get_dash():
                      .select_from(Etape).join(Trajet).join(Ligne) \
                      .filter(Etape.record_timestamp == lastUts)
 
-    colors = []
-
-    for result in results:
-        if result.ecart > 60:
-            color = 'red'
- 
-        if result.ecart < -60:
-            color = 'purple'
-        
-        if abs(result.ecart) <= 60:
-            color = 'green'
-            
-        colors.append(color)
-        
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
@@ -79,7 +65,7 @@ def get_dash():
         html.Div(
             dcc.Graph(
                 id='map',
-                figure=get_map_figure(results, colors)
+                figure=get_map_figure(results, get_colors(results))
             )),
         html.Div([
             dcc.Markdown(d("""
@@ -131,21 +117,7 @@ def get_dash():
             results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne).select_from(Etape).join(Trajet).join(Ligne).filter(Etape.record_timestamp == lastUts).filter(Trajet.id_ligne == value)
         session.close()
 
-        colors = []
-
-        for result in results:
-            if result.ecart > 60:
-                color = 'red'
-    
-            if result.ecart < -60:
-                color = 'purple'
-            
-            if abs(result.ecart) <= 60:
-                color = 'green'
-                
-            colors.append(color)
-
-        return get_map_figure(results, colors)
+        return get_map_figure(results, get_colors(results))
 
     app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 

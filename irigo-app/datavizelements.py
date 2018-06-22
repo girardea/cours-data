@@ -103,3 +103,20 @@ def get_barh(lastUts):
     )
 
     return [g]
+
+def get_colors(results):
+    colors = []
+
+    for result in results:
+        if result.ecart > 60:
+            color = 'red'
+
+        if result.ecart < -60:
+            color = 'purple'
+
+        if abs(result.ecart) <= 60:
+            color = 'green'
+
+        colors.append(color)
+
+    return colors
