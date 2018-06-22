@@ -1,0 +1,9 @@
+{
+    "dialect": "postgresql",
+    "driver": "psycopg2",
+    "username": "imie",
+    "password": "zizou98",
+    "host": "data.coto-conseil.fr",
+    "port": "5432",
+    "database": "irigo"
+}
