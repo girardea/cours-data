@@ -11,22 +11,29 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objs as go
 import math
+import json
 
+from flask import make_response
+from textwrap import dedent as d
 from plotly.offline import init_notebook_mode, iplot
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Modules internes
-from db import Session, Trajet, Etape
-# from db import Arret, Vehicule, Ligne, Trajet, Etape
+from db import Session, Trajet, Etape, Ligne, Vehicule
 
-def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
-    import os
-    
-    with open(os.path.join(folderpath, filename), 'r') as file:
-        s = file.read()
-    
-    return s
+from datavizelements import get_map, get_barh
+
+def generate_table(dataframe, max_rows=10):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))]
+    )
 
 def get_dash():
     # Instanciation du Dash
@@ -36,7 +43,14 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination).select_from(Etape).join(Trajet)
+    lastUts = session.query(Etape.record_timestamp) \
+                     .order_by(Etape.id_etape.desc()) \
+                     .first()[0]
+    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude,
+                            Trajet.destination, Trajet.id_trajet) \
+                     .select_from(Etape).join(Trajet) \
+                     .filter(Etape.record_timestamp == lastUts)
+
     colors = []
 
     for result in results:
@@ -50,46 +64,43 @@ def get_dash():
             color = 'green'
             
         colors.append(color)
-
-    # Récupération du token mapbox
-    mapbox_access_token = get_mapbox_access_token()
-
         
     # Contenu de l'app
     app.layout = html.Div([
-        html.H1('Irigo app'),
-        dcc.Graph(
-            id='map',
-            figure={
-                'data': [
-                    go.Scattermapbox(
-                    lat=[result.latitude for result in results],
-                    lon=[result.longitude for result in results],
-                    mode='markers',
-                    marker=dict(
-                        size=9,
-                        color=colors
-                    ),
-                    text=[result.ecart for result in results],
-                )
-                ],
-                'layout': go.Layout(
-                    autosize=True,
-                    hovermode='closest',
-                    mapbox=dict(
-                        accesstoken=mapbox_access_token,
-                        bearing=0,
-                        center=dict(
-                            lat=np.mean([result.latitude for result in results]),
-                            lon=np.mean([result.longitude for result in results])
-                        ),
-                        pitch=0,
-                        zoom=10
-                    ),
-                )
-            }
-        )
-    ], style={'text-align': 'center'})
+        html.H1('Irigo app', style={'text-align': 'center'}),
+        html.Div(get_map(results, colors)),
+        html.Div(get_barh()),
+        html.Div([
+            dcc.Markdown(d("""
+                **Données par point**
+
+                Cliquez sur un point pour afficher les données relatives à celui-ci.
+            """)),
+            html.Table(id='click-data')
+        ], style={'display': 'inline-block', 'width': '100%', 'margin-left': '78px'})
+    ])
+
+    @app.callback(
+        dash.dependencies.Output('click-data', 'children'),
+        [dash.dependencies.Input('map', 'clickData')])
+    def display_click_data(clickData):
+        # nom de ligne
+        # numéro de ligne
+        # prochain arrêt
+        # retard
+        
+        # Ouverture d'une session vers la DB
+        session = Session()
+        print(clickData['points'])
+        query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
+                       .select_from(Trajet).join(Ligne).join(Vehicule) \
+                       .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
+        session.close()
+
+        df = pd.read_sql_query(query.statement, query.session.bind)
+        return generate_table(df)
+
+    app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
     return app
 
