@@ -18,11 +18,14 @@ def get_mapbox_access_token(folderpath='.', filename="mapbox.txt"):
     
     return s
 
-def get_map(results, colors):
+def get_map_figure(results, colors):
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
 
+    lats = [trajet.latitude for trajet in results]
+    print(len(lats))
+    print(lats[:5])
     data = go.Scattermapbox(
         lat=[trajet.latitude for trajet in results],
         lon=[trajet.longitude for trajet in results],
@@ -51,22 +54,15 @@ def get_map(results, colors):
         ),
     )
 
-    g = dcc.Graph(
-        id='map',
-        figure={
-            'data': [data],
-            'layout': layout
-        }
-    )
+    return {'data': [data], 'layout': layout}
 
-    return [g]
-
-def get_barh():
+def get_barh(lastUts):
 
     session = Session()
     
     query = session.query(Etape.ecart, Ligne.nom_ligne) \
-                   .select_from(Etape).join(Trajet).join(Ligne)
+                   .select_from(Etape).join(Trajet).join(Ligne) \
+                   .filter(Etape.record_timestamp == lastUts)
 
     df = pd.read_sql_query(query.statement, query.session.bind)
 
