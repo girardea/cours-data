@@ -154,6 +154,7 @@ def test(d_df):
             # TODO : ajouter borne max
             if c == 'latitude':
                 if not (df[c] > 45).all():
+                    print(df.loc[df[c] <= 45])
                     msg = "Latitudes seem to be off-grid."
                     raise ValueError(msg)
             # longitude dans les bornes angevines
@@ -189,7 +190,8 @@ def add_index(df, tablename, indexname, engine):
     return df
 
 def fill_database(d_df, verbose=False):
-    print("--> Filling in database")
+    if verbose:
+        print("--> Filling in database")
 
     engine = utils.create_engine(flavor='sqlite')
 

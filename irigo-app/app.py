@@ -137,16 +137,22 @@ if __name__ == '__main__':
         filenames = glob.glob('data/*.json')
         bar = progressbar.ProgressBar(max_value=len(filenames))
         for i, filename in enumerate(filenames):
-            print(filename)
+            if args.verbose:
+                print(filename)
+
             with open(filename, 'r') as file:
                 d = json.load(file)
+
+            # Si pas de données (la nuit), on passe.
+            if len(d['records']) == 0:
+                continue
             
             # A partir du dictionnaire, on crée les tables
             # sous la forme de DataFrames
             d_df = create_dataframes(d['records'])
 
             # On teste les colonnes (types, aberrations, etc.)
-            test(d_df)
+            # test(d_df)
 
             # On rentre ces informations dans la DB
             fill_database(d_df, verbose=args.verbose)
