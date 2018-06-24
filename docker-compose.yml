@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+  irigo_app:
+    container_name: irigo_app
+    restart: unless-stopped
+    network_mode: lucasvn
+    build: ./irigo-app
+    ports:
+      - 8383:8383
+    command: python3 app.py --run-server --docker
