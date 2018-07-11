@@ -24,8 +24,7 @@ def get_map_figure(results, colors):
     mapbox_access_token = get_mapbox_access_token()
 
     lats = [trajet.latitude for trajet in results]
-    print(len(lats))
-    print(lats[:5])
+    
     data = go.Scattermapbox(
         lat=[trajet.latitude for trajet in results],
         lon=[trajet.longitude for trajet in results],

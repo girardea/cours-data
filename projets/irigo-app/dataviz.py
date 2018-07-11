@@ -43,14 +43,16 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    # Qui est celui qui a mis order_by id_etape ?!?
     lastUts = session.query(Etape.record_timestamp) \
                      .order_by(Etape.record_timestamp.desc()) \
                      .first()[0]
     results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude,
-                            Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne) \
+                            Trajet.destination, Trajet.id_trajet,
+                            Trajet.id_ligne, Ligne.nom_ligne) \
                      .select_from(Etape).join(Trajet).join(Ligne) \
                      .filter(Etape.record_timestamp == lastUts)
+
+    session.close()
 
     # Contenu de l'app
     app.layout = html.Div([
@@ -89,14 +91,15 @@ def get_dash():
         session = Session()
 
         if clickData:
-            query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
-                       .select_from(Trajet).join(Ligne).join(Vehicule) \
-                       .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
+            query = session.query(Ligne.nom_ligne, Ligne.num_ligne,
+                                  Vehicule.type_vehicule,
+                                  Vehicule.etat_vehicule) \
+                           .select_from(Trajet).join(Ligne).join(Vehicule) \
+                           .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
         else:
             query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
                        .select_from(Trajet).join(Ligne).join(Vehicule)
-        session.close()
-
+        
         df = pd.read_sql_query(query.statement, query.session.bind)
 
         session.close()
@@ -107,14 +110,31 @@ def get_dash():
         dash.dependencies.Output('map', 'figure'),
         [dash.dependencies.Input('select-ligne', 'value')])
     def update_graph(value):
+        
         session = Session()
-        print(value)
+        
         if value == None:
-            lastUts = session.query(Etape.record_timestamp).order_by(Etape.id_etape.desc()).first()[0]
-            results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne).select_from(Etape).join(Trajet).join(Ligne).filter(Etape.record_timestamp == lastUts)
+            lastUts = session.query(Etape.record_timestamp) \
+                             .order_by(Etape.id_etape.desc()) \
+                             .first()[0]
+            results = session.query(Etape.ecart, Trajet.latitude,
+                                    Trajet.longitude, Trajet.destination,
+                                    Trajet.id_trajet, Trajet.id_ligne,
+                                    Ligne.nom_ligne) \
+                             .select_from(Etape).join(Trajet).join(Ligne) \
+                             .filter(Etape.record_timestamp == lastUts)
         else:
-            lastUts = session.query(Etape.record_timestamp).order_by(Etape.id_etape.desc()).first()[0]
-            results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude, Trajet.destination, Trajet.id_trajet, Trajet.id_ligne, Ligne.nom_ligne).select_from(Etape).join(Trajet).join(Ligne).filter(Etape.record_timestamp == lastUts).filter(Trajet.id_ligne == value)
+            lastUts = session.query(Etape.record_timestamp) \
+                             .order_by(Etape.id_etape.desc()) \
+                             .first()[0]
+            results = session.query(Etape.ecart, Trajet.latitude,
+                                    Trajet.longitude, Trajet.destination,
+                                    Trajet.id_trajet, Trajet.id_ligne,
+                                    Ligne.nom_ligne) \
+                             .select_from(Etape).join(Trajet).join(Ligne) \
+                             .filter(Etape.record_timestamp == lastUts) \
+                             .filter(Trajet.id_ligne == value)
+        
         session.close()
 
         return get_map_figure(results, get_colors(results))
