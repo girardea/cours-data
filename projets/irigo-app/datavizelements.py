@@ -7,6 +7,8 @@ import pandas as pd
 
 import plotly.graph_objs as go
 
+from sqlalchemy import desc, func
+
 # import internes
 from db import Etape, Ligne, Trajet, Session
 
@@ -73,7 +75,7 @@ def get_barh(lastUts):
 
     data = go.Bar(
         y=dft.index,
-        x=dft['ecart'],
+        x=dft['ecart'] / 60,
         orientation='h',
         marker={
             'color': 'rgba(210, 105, 30, 0.5)'
@@ -81,9 +83,9 @@ def get_barh(lastUts):
     )
 
     layout = go.Layout(
-        title="Ecarts absolus moyens sur les lignes du réseau Irigo",
+        title="Qualité du service ligne par ligne en ce moment",
         xaxis={
-            'title': "écart moyen absolu (secondes)",
+            'title': "écart absolu moyen (minutes)",
         },
         yaxis={
             'title': "ligne"
@@ -95,6 +97,44 @@ def get_barh(lastUts):
 
     g = dcc.Graph(
         id='barh',
+        figure={
+            'data': [data],
+            'layout': layout
+        }
+    )
+
+    return [g]
+
+def get_tsplot():
+
+    session = Session()
+    
+    query = session.query(func.avg(Etape.ecart).label("ecart"), Etape.record_timestamp) \
+                   .group_by(Etape.record_timestamp) \
+                   .order_by(desc(Etape.record_timestamp))
+
+    df = pd.read_sql_query(query.statement, query.session.bind)
+
+    session.close()
+
+    df.set_index('record_timestamp', inplace=True)
+
+    df = df.resample('15T').mean() / 60
+
+    data = go.Scatter(x=df.index, y=df['ecart'])
+
+    layout = go.Layout(
+        title="Qualité du service ces dernières heures sur l'ensemble du réseau",
+        xaxis={
+            'title': "heure de la journée",
+        },
+        yaxis={
+            'title': "écart absolu moyen (minutes)"
+        }
+    )
+
+    g = dcc.Graph(
+        id='tsplot',
         figure={
             'data': [data],
             'layout': layout

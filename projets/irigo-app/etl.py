@@ -123,6 +123,9 @@ def create_dataframes(d):
     etape['record_timestamp'] = pd.to_datetime(etape['record_timestamp'])
     etape['heure_arret_estimee'] = pd.to_datetime(etape['heure_arret_estimee'])
 
+    # TODO: remove and adapt
+    etape['record_timestamp'] = etape['record_timestamp'].max()
+    
     def transfo(row):
         return row['heure_arret_estimee'] - dt.timedelta(seconds=row['ecart'])
 

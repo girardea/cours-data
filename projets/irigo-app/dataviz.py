@@ -22,7 +22,7 @@ from sqlalchemy.orm import sessionmaker
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map_figure, get_barh, get_colors
+from datavizelements import get_map_figure, get_barh, get_colors, get_tsplot
 
 def generate_table(dataframe, max_rows=10):
     return html.Table(
@@ -57,7 +57,10 @@ def get_dash():
     # Contenu de l'app
     app.layout = html.Div([
         html.H1('Irigo app', style={'text-align': 'center'}),
-        html.Div(get_barh(lastUts)),
+        html.Div(children=[
+            html.Div(get_barh(lastUts), style={'width': '50%', 'display': 'inline-block'}),
+            html.Div(get_tsplot(), style={'width': '50%', 'display': 'inline-block'})
+            ], style={'width': '100%', 'display': 'inline-block'}),
         html.Div([
             dcc.Dropdown(
                 id='select-ligne',

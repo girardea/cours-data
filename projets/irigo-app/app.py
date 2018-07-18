@@ -146,7 +146,7 @@ if __name__ == '__main__':
             # Si pas de données (la nuit), on passe.
             if len(d['records']) == 0:
                 continue
-            
+
             # A partir du dictionnaire, on crée les tables
             # sous la forme de DataFrames
             d_df = create_dataframes(d['records'])
