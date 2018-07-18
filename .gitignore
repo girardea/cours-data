@@ -108,3 +108,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 node_modules/
+
+# perso
+projets/irigo-app/data
+
