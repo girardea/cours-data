@@ -24,16 +24,19 @@ from db import Session, Trajet, Etape, Ligne, Vehicule
 
 from datavizelements import get_map_figure, get_barh, get_colors, get_tsplot
 
+
 def generate_table(dataframe, max_rows=10):
     return html.Table(
         # Header
-        [html.Tr([html.Th(col) for col in dataframe.columns])] +
-
+        [html.Tr([html.Th(col) for col in dataframe.columns])]
+        +
         # Body
-        [html.Tr([
-            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
-        ]) for i in range(min(len(dataframe), max_rows))]
+        [
+            html.Tr([html.Td(dataframe.iloc[i][col]) for col in dataframe.columns])
+            for i in range(min(len(dataframe), max_rows))
+        ]
     )
+
 
 def get_dash():
     # Instanciation du Dash
@@ -43,48 +46,85 @@ def get_dash():
     session = Session()
 
     # Récupération des trajets
-    lastUts = session.query(Etape.record_timestamp) \
-                     .order_by(Etape.record_timestamp.desc()) \
-                     .first()[0]
-    results = session.query(Etape.ecart, Trajet.latitude, Trajet.longitude,
-                            Trajet.destination, Trajet.id_trajet,
-                            Trajet.id_ligne, Ligne.nom_ligne) \
-                     .select_from(Etape).join(Trajet).join(Ligne) \
-                     .filter(Etape.record_timestamp == lastUts)
+    lastUts = (
+        session.query(Etape.record_timestamp)
+        .order_by(Etape.record_timestamp.desc())
+        .first()[0]
+    )
+    results = (
+        session.query(
+            Etape.ecart,
+            Trajet.latitude,
+            Trajet.longitude,
+            Trajet.destination,
+            Trajet.id_trajet,
+            Trajet.id_ligne,
+            Ligne.nom_ligne,
+        )
+        .select_from(Etape)
+        .join(Trajet)
+        .join(Ligne)
+        .filter(Etape.record_timestamp == lastUts)
+    )
 
     session.close()
 
     # Contenu de l'app
-    app.layout = html.Div([
-        html.H1('Irigo app', style={'text-align': 'center'}),
-        html.Div(children=[
-            html.Div(get_barh(lastUts), style={'width': '50%', 'display': 'inline-block'}),
-            html.Div(get_tsplot(), style={'width': '50%', 'display': 'inline-block'})
-            ], style={'width': '100%', 'display': 'inline-block'}),
-        html.Div([
-            dcc.Dropdown(
-                id='select-ligne',
-                options=[{'label': trajet.nom_ligne, 'value': trajet.id_ligne} for trajet in results]
-            )
-        ]),
-        html.Div(
-            dcc.Graph(
-                id='map',
-                figure=get_map_figure(results, get_colors(results))
-            )),
-        html.Div([
-            dcc.Markdown(d("""
+    app.layout = html.Div(
+        [
+            html.H1("Irigo app", style={"text-align": "center"}),
+            html.Div(
+                children=[
+                    html.Div(
+                        get_barh(lastUts),
+                        style={"width": "50%", "display": "inline-block"},
+                    ),
+                    html.Div(
+                        get_tsplot(), style={"width": "50%", "display": "inline-block"}
+                    ),
+                ],
+                style={"width": "100%", "display": "inline-block"},
+            ),
+            html.Div(
+                [
+                    dcc.Dropdown(
+                        id="select-ligne",
+                        options=[
+                            {"label": trajet.nom_ligne, "value": trajet.id_ligne}
+                            for trajet in results
+                        ],
+                    )
+                ]
+            ),
+            html.Div(
+                dcc.Graph(id="map", figure=get_map_figure(results, get_colors(results)))
+            ),
+            html.Div(
+                [
+                    dcc.Markdown(
+                        d(
+                            """
                 **Données par point**
 
                 Cliquez sur un point pour afficher les données relatives à celui-ci.
-            """)),
-            html.Table(id='click-data')
-        ], style={'display': 'inline-block', 'width': '100%', 'margin-left': '78px'})
-    ])
+            """
+                        )
+                    ),
+                    html.Table(id="click-data"),
+                ],
+                style={
+                    "display": "inline-block",
+                    "width": "100%",
+                    "margin-left": "78px",
+                },
+            ),
+        ]
+    )
 
     @app.callback(
-        dash.dependencies.Output('click-data', 'children'),
-        [dash.dependencies.Input('map', 'clickData')])
+        dash.dependencies.Output("click-data", "children"),
+        [dash.dependencies.Input("map", "clickData")],
+    )
     def display_click_data(clickData):
         # nom de ligne
         # numéro de ligne
@@ -94,50 +134,89 @@ def get_dash():
         session = Session()
 
         if clickData:
-            query = session.query(Ligne.nom_ligne, Ligne.num_ligne,
-                                  Vehicule.type_vehicule,
-                                  Vehicule.etat_vehicule) \
-                           .select_from(Trajet).join(Ligne).join(Vehicule) \
-                           .filter(Trajet.id_trajet == clickData['points'][0]['customdata'])
+            query = (
+                session.query(
+                    Ligne.nom_ligne,
+                    Ligne.num_ligne,
+                    Vehicule.type_vehicule,
+                    Vehicule.etat_vehicule,
+                )
+                .select_from(Trajet)
+                .join(Ligne)
+                .join(Vehicule)
+                .filter(Trajet.id_trajet == clickData["points"][0]["customdata"])
+            )
         else:
-            query = session.query(Ligne.nom_ligne, Ligne.num_ligne, Vehicule.type_vehicule, Vehicule.etat_vehicule) \
-                       .select_from(Trajet).join(Ligne).join(Vehicule)
-        
+            query = (
+                session.query(
+                    Ligne.nom_ligne,
+                    Ligne.num_ligne,
+                    Vehicule.type_vehicule,
+                    Vehicule.etat_vehicule,
+                )
+                .select_from(Trajet)
+                .join(Ligne)
+                .join(Vehicule)
+            )
+
         df = pd.read_sql_query(query.statement, query.session.bind)
 
         session.close()
-        
+
         return generate_table(df)
 
     @app.callback(
-        dash.dependencies.Output('map', 'figure'),
-        [dash.dependencies.Input('select-ligne', 'value')])
+        dash.dependencies.Output("map", "figure"),
+        [dash.dependencies.Input("select-ligne", "value")],
+    )
     def update_graph(value):
-        
+
         session = Session()
-        
+
         if value == None:
-            lastUts = session.query(Etape.record_timestamp) \
-                             .order_by(Etape.id_etape.desc()) \
-                             .first()[0]
-            results = session.query(Etape.ecart, Trajet.latitude,
-                                    Trajet.longitude, Trajet.destination,
-                                    Trajet.id_trajet, Trajet.id_ligne,
-                                    Ligne.nom_ligne) \
-                             .select_from(Etape).join(Trajet).join(Ligne) \
-                             .filter(Etape.record_timestamp == lastUts)
+            lastUts = (
+                session.query(Etape.record_timestamp)
+                .order_by(Etape.id_etape.desc())
+                .first()[0]
+            )
+            results = (
+                session.query(
+                    Etape.ecart,
+                    Trajet.latitude,
+                    Trajet.longitude,
+                    Trajet.destination,
+                    Trajet.id_trajet,
+                    Trajet.id_ligne,
+                    Ligne.nom_ligne,
+                )
+                .select_from(Etape)
+                .join(Trajet)
+                .join(Ligne)
+                .filter(Etape.record_timestamp == lastUts)
+            )
         else:
-            lastUts = session.query(Etape.record_timestamp) \
-                             .order_by(Etape.id_etape.desc()) \
-                             .first()[0]
-            results = session.query(Etape.ecart, Trajet.latitude,
-                                    Trajet.longitude, Trajet.destination,
-                                    Trajet.id_trajet, Trajet.id_ligne,
-                                    Ligne.nom_ligne) \
-                             .select_from(Etape).join(Trajet).join(Ligne) \
-                             .filter(Etape.record_timestamp == lastUts) \
-                             .filter(Trajet.id_ligne == value)
-        
+            lastUts = (
+                session.query(Etape.record_timestamp)
+                .order_by(Etape.id_etape.desc())
+                .first()[0]
+            )
+            results = (
+                session.query(
+                    Etape.ecart,
+                    Trajet.latitude,
+                    Trajet.longitude,
+                    Trajet.destination,
+                    Trajet.id_trajet,
+                    Trajet.id_ligne,
+                    Ligne.nom_ligne,
+                )
+                .select_from(Etape)
+                .join(Trajet)
+                .join(Ligne)
+                .filter(Etape.record_timestamp == lastUts)
+                .filter(Trajet.id_ligne == value)
+            )
+
         session.close()
 
         return get_map_figure(results, get_colors(results))
@@ -146,13 +225,15 @@ def get_dash():
 
     return app
 
+
 def run_dash(docker=False):
     app = get_dash()
     if docker:
-        app.run_server(host='0.0.0.0', port=8383)
+        app.run_server(host="0.0.0.0", port=8383)
     else:
         app.run_server(debug=True)
 
+
 # Démarrage de l'app
-if __name__== '__main__':
+if __name__ == "__main__":
     run_dash()
