@@ -78,52 +78,70 @@ def get_dash():
 
     # Contenu de l'app
     app.layout = html.Div(
-        [
-            html.H1("Irigo app", style={"text-align": "center"}),
+        className="container-fluid",
+        children=[
             html.Div(
+                className="page-header",
+                children=[html.H1(className="text-center", children="Irigo app")],
+            ),
+            html.Div(
+                className="row",
+                children=[
+                    html.Div(className="col-sm-6", children=[dcc.Graph(id="barh")]),
+                    html.Div(className="col-sm-6", children=get_tsplot()),
+                ],
+            ),
+            html.Div(
+                className="row",
                 children=[
                     html.Div(
-                        [dcc.Graph(id="barh")],
-                        style={"width": "50%", "display": "inline-block"},
-                    ),
-                    html.Div(
-                        get_tsplot(), style={"width": "50%", "display": "inline-block"}
-                    ),
-                ],
-                style={"width": "100%", "display": "inline-block"},
-            ),
-            html.Div(
-                [
-                    dcc.Dropdown(
-                        id="select-ligne",
-                        options=[
-                            {"label": trajet.nom_ligne, "value": trajet.id_ligne}
-                            for trajet in results
-                        ],
-                    )
-                ]
-            ),
-            html.Div(dcc.Graph(id="map")),
-            html.Div(
-                [
-                    dcc.Markdown(
-                        d(
-                            """
+                        className="col-sm-4",
+                        children=[
+                            dcc.Dropdown(
+                                id="select-ligne",
+                                options=[
+                                    {
+                                        "label": trajet.nom_ligne,
+                                        "value": trajet.id_ligne,
+                                    }
+                                    for trajet in results
+                                ],
+                            ),
+                            dcc.Markdown(
+                                d(
+                                    """
                 **Données par point**
 
                 Cliquez sur un point pour afficher les données relatives à celui-ci.
             """
-                        )
+                                )
+                            ),
+                            html.Table(id="click-data"),
+                        ],
                     ),
-                    html.Table(id="click-data"),
+                    html.Div(className="col-sm-8", children=[dcc.Graph(id="map")]),
                 ],
-                style={
-                    "display": "inline-block",
-                    "width": "100%",
-                    "margin-left": "78px",
-                },
             ),
-        ]
+            html.Div(
+                className="page-footer font-small blue pt4",
+                children=html.Div(
+                    className="container-fluid text-center text-md-left",
+                    children=html.Div(
+                        className="row",
+                        children=html.Div(
+                            className="col-md-6 mt-md-0 mt-3",
+                            children=[
+                                html.H5(
+                                    className="text-uppercase",
+                                    children="Footer Content",
+                                ),
+                                html.P("Here you may write anything you want.")
+                            ],
+                        ),
+                    ),
+                ),
+            ),
+        ],
     )
 
     @app.callback(Output("barh", "figure"), [Input("tsplot", "hoverData")])
@@ -201,7 +219,23 @@ def get_dash():
 
         return get_map_figure(tt, line=value)
 
+    # Bootstrap
+    app.css.append_css(
+        {
+            "external_url": "https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+        }
+    )
+    app.scripts.append_script(
+        {
+            "external_url": "https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        }
+    )
+
+    # Dash CSS
     app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+
+    # Loading screen CSS
+    app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
 
     return app
 
