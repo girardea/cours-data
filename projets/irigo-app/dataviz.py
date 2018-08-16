@@ -13,6 +13,7 @@ import plotly.graph_objs as go
 import math
 import json
 
+from textwrap import dedent as d
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
