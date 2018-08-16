@@ -101,7 +101,7 @@ def get_tsplot():
     session = Session()
 
     query = (
-        session.query(func.avg(Etape.ecart).label("ecart"), Etape.record_timestamp)
+        session.query(func.avg(func.abs(Etape.ecart)).label("ecart"), Etape.record_timestamp)
         .group_by(Etape.record_timestamp)
         .order_by(desc(Etape.record_timestamp))
     )

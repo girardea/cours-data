@@ -13,9 +13,6 @@ import plotly.graph_objs as go
 import math
 import json
 
-from flask import make_response
-from textwrap import dedent as d
-from plotly.offline import init_notebook_mode, iplot
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
