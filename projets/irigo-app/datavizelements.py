@@ -63,12 +63,24 @@ def get_barh(lastUts):
     """
     session = Session()
 
-    closeUts = session.query(Etape.record_timestamp) \
-                      .order_by(func.abs(Etape.record_timestamp - lastUts)) \
-                      .limit(1) \
-                      .scalar()
+    lowUts = (
+        session.query(Etape.record_timestamp)
+        .filter(Etape.record_timestamp <= lastUts)
+        .order_by(desc(Etape.record_timestamp))
+        .first()[0]
+    )
 
-    print(lastUts, closeUts)
+    highUts = (
+        session.query(Etape.record_timestamp)
+        .filter(Etape.record_timestamp >= lastUts)
+        .order_by(Etape.record_timestamp)
+        .first()[0]
+    )
+
+    if highUts - lastUts > lastUts - lowUts:
+        closeUts = lowUts
+    else:
+        closeUts = highUts
 
     """
     Get data
@@ -113,7 +125,9 @@ def get_tsplot():
     session = Session()
 
     query = (
-        session.query(func.avg(func.abs(Etape.ecart)).label("ecart"), Etape.record_timestamp)
+        session.query(
+            func.avg(func.abs(Etape.ecart)).label("ecart"), Etape.record_timestamp
+        )
         .group_by(Etape.record_timestamp)
         .order_by(desc(Etape.record_timestamp))
     )
@@ -123,7 +137,7 @@ def get_tsplot():
     session.close()
 
     df.set_index("record_timestamp", inplace=True)
-    df.index = df.index.shift(2, freq='H')
+    df.index = df.index.shift(2, freq="H")
 
     df = df.resample("15T").mean() / 60
 

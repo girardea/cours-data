@@ -133,11 +133,11 @@ def get_dash():
         if not hoverData:
             return get_barh(lastUts)
 
-        nb = len(hoverData['points'])
+        nb = len(hoverData["points"])
         if nb > 1:
             logging.warning("{} points hovered (should be 0 or 1).".format(nb))
 
-        tt = dt.datetime.strptime(hoverData['points'][0]['x'], "%Y-%m-%d %H:%M")
+        tt = dt.datetime.strptime(hoverData["points"][0]["x"], "%Y-%m-%d %H:%M")
 
         # bug des deux heures (lié à la timezone)
         tt -= dt.timedelta(hours=2)
