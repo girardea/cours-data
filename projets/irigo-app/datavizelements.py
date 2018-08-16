@@ -109,8 +109,10 @@ def get_barh(lastUts):
     )
 
     layout = go.Layout(
-        title="Qualité du service ligne par ligne en ce moment",
-        xaxis={"title": "écart absolu moyen (minutes)"},
+        title="Qualité du service ligne par ligne {}".format(
+            closeUts.strftime("%A %d/%m/%Y à %H:%M")
+        ),
+        xaxis=dict(title="écart absolu moyen (minutes)", range=[0, 10]),
         yaxis={"title": "ligne"},
         margin={"l": 300},
     )
