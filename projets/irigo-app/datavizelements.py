@@ -101,6 +101,8 @@ def get_barh(lastUts):
         index="nom_ligne", values="ecart", aggfunc=lambda x: np.mean(np.abs(x))
     ).sort_values(by="ecart")
 
+    xmax = (dft["ecart"] / 60).max()
+
     data = go.Bar(
         y=dft.index,
         x=dft["ecart"] / 60,
@@ -112,8 +114,8 @@ def get_barh(lastUts):
         title="Qualité du service ligne par ligne {}".format(
             closeUts.strftime("%A %d/%m/%Y à %H:%M")
         ),
-        xaxis=dict(title="écart absolu moyen (minutes)", range=[0, 10]),
-        yaxis={"title": "ligne"},
+        xaxis=dict(title="écart absolu moyen (minutes)", range=[0, max(10, xmax)]),
+        yaxis=dict(title="ligne"),
         margin={"l": 300},
     )
 
@@ -149,6 +151,7 @@ def get_tsplot():
         title="Qualité du service ces dernières heures sur l'ensemble du réseau",
         xaxis={"title": "heure de la journée"},
         yaxis={"title": "écart absolu moyen (minutes)"},
+        hovermode="closest",
     )
 
     g = dcc.Graph(id="tsplot", figure={"data": [data], "layout": layout})
@@ -160,13 +163,11 @@ def get_colors(results):
     colors = []
 
     for result in results:
-        if result.ecart > 60:
+        if result.ecart > 3 * 60:
             color = "red"
-
-        if result.ecart < -60:
+        elif result.ecart < -3 * 60:
             color = "purple"
-
-        if abs(result.ecart) <= 60:
+        else:
             color = "green"
 
         colors.append(color)
