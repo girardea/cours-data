@@ -1,5 +1,6 @@
-
 import dash_core_components as dcc
+
+import datetime as dt
 
 import numpy as np
 
@@ -112,7 +113,7 @@ def get_barh(lastUts):
 
     layout = go.Layout(
         title="Qualité du service ligne par ligne {}".format(
-            closeUts.strftime("%A %d/%m/%Y à %H:%M")
+            (closeUts + dt.timedelta(hours=2)).strftime("%A %d/%m/%Y à %H:%M")
         ),
         xaxis=dict(title="écart absolu moyen (minutes)", range=[0, max(10, xmax)]),
         yaxis=dict(title="ligne"),
