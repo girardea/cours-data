@@ -5,17 +5,26 @@
     Eléments de visualisation (graphiques) appelés par app-irigo.py
 """
 import dash
+from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
-import numpy as np
-import plotly.graph_objs as go
-import math
+
+import datetime as dt
+
 import json
 
-from textwrap import dedent as d
+import math
+
+import numpy as np
+
+import pandas as pd
+
+import plotly.graph_objs as go
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from textwrap import dedent as d
 
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
@@ -74,7 +83,7 @@ def get_dash():
             html.Div(
                 children=[
                     html.Div(
-                        get_barh(lastUts),
+                        [dcc.Graph(id="barh")],
                         style={"width": "50%", "display": "inline-block"},
                     ),
                     html.Div(
@@ -118,6 +127,22 @@ def get_dash():
             ),
         ]
     )
+
+    @app.callback(Output("barh", "figure"), [Input("tsplot", "hoverData")])
+    def plot_barh(hoverData):
+        if not hoverData:
+            return get_barh(lastUts)
+
+        nb = len(hoverData['points'])
+        if nb > 1:
+            logging.warning("{} points hovered (should be 0 or 1).".format(nb))
+
+        tt = dt.datetime.strptime(hoverData['points'][0]['x'], "%Y-%m-%d %H:%M")
+
+        # bug des deux heures (lié à la timezone)
+        tt -= dt.timedelta(hours=2)
+
+        return get_barh(tt)
 
     @app.callback(
         dash.dependencies.Output("click-data", "children"),

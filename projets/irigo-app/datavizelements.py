@@ -58,15 +58,27 @@ def get_map_figure(results, colors):
 
 
 def get_barh(lastUts):
-
+    """
+    Get closest date
+    """
     session = Session()
 
+    closeUts = session.query(Etape.record_timestamp) \
+                      .order_by(func.abs(Etape.record_timestamp - lastUts)) \
+                      .limit(1) \
+                      .scalar()
+
+    print(lastUts, closeUts)
+
+    """
+    Get data
+    """
     query = (
         session.query(Etape.ecart, Ligne.nom_ligne)
         .select_from(Etape)
         .join(Trajet)
         .join(Ligne)
-        .filter(Etape.record_timestamp == lastUts)
+        .filter(Etape.record_timestamp == closeUts)
     )
 
     df = pd.read_sql_query(query.statement, query.session.bind)
@@ -91,9 +103,9 @@ def get_barh(lastUts):
         margin={"l": 300},
     )
 
-    g = dcc.Graph(id="barh", figure={"data": [data], "layout": layout})
+    figure = {"data": [data], "layout": layout}
 
-    return [g]
+    return figure
 
 
 def get_tsplot():
