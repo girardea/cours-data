@@ -111,6 +111,7 @@ def get_tsplot():
     session.close()
 
     df.set_index("record_timestamp", inplace=True)
+    df.index = df.index.shift(2, freq='H')
 
     df = df.resample("15T").mean() / 60
 
