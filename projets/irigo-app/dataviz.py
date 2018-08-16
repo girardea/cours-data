@@ -29,7 +29,7 @@ from textwrap import dedent as d
 # Modules internes
 from db import Session, Trajet, Etape, Ligne, Vehicule
 
-from datavizelements import get_map_figure, get_barh, get_colors, get_tsplot
+from datavizelements import get_map_figure, get_barh, get_tsplot
 
 
 def generate_table(dataframe, max_rows=10):
@@ -103,9 +103,7 @@ def get_dash():
                     )
                 ]
             ),
-            html.Div(
-                dcc.Graph(id="map", figure=get_map_figure(results, get_colors(results)))
-            ),
+            html.Div(dcc.Graph(id="map")),
             html.Div(
                 [
                     dcc.Markdown(
@@ -189,60 +187,19 @@ def get_dash():
         return generate_table(df)
 
     @app.callback(
-        dash.dependencies.Output("map", "figure"),
-        [dash.dependencies.Input("select-ligne", "value")],
+        Output("map", "figure"),
+        [Input("select-ligne", "value"), Input("tsplot", "hoverData")],
     )
-    def update_graph(value):
+    def update_graph(value, hoverData):
+        if not hoverData:
+            return get_map_figure(lastUts, line=value)
 
-        session = Session()
+        tt = dt.datetime.strptime(hoverData["points"][0]["x"], "%Y-%m-%d %H:%M")
 
-        if value == None:
-            lastUts = (
-                session.query(Etape.record_timestamp)
-                .order_by(Etape.id_etape.desc())
-                .first()[0]
-            )
-            results = (
-                session.query(
-                    Etape.ecart,
-                    Trajet.latitude,
-                    Trajet.longitude,
-                    Trajet.destination,
-                    Trajet.id_trajet,
-                    Trajet.id_ligne,
-                    Ligne.nom_ligne,
-                )
-                .select_from(Etape)
-                .join(Trajet)
-                .join(Ligne)
-                .filter(Etape.record_timestamp == lastUts)
-            )
-        else:
-            lastUts = (
-                session.query(Etape.record_timestamp)
-                .order_by(Etape.id_etape.desc())
-                .first()[0]
-            )
-            results = (
-                session.query(
-                    Etape.ecart,
-                    Trajet.latitude,
-                    Trajet.longitude,
-                    Trajet.destination,
-                    Trajet.id_trajet,
-                    Trajet.id_ligne,
-                    Ligne.nom_ligne,
-                )
-                .select_from(Etape)
-                .join(Trajet)
-                .join(Ligne)
-                .filter(Etape.record_timestamp == lastUts)
-                .filter(Trajet.id_ligne == value)
-            )
+        # bug des deux heures (lié à la timezone)
+        tt -= dt.timedelta(hours=2)
 
-        session.close()
-
-        return get_map_figure(results, get_colors(results))
+        return get_map_figure(tt, line=value)
 
     app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 

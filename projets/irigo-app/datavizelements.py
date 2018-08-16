@@ -14,6 +14,34 @@ from sqlalchemy import desc, func
 from db import Etape, Ligne, Trajet, Session
 
 
+def closest_time(lastUts):
+    """ Returns time that exists in DB and that is closest to lastUts
+    """
+    session = Session()
+
+    lowUts = (
+        session.query(Etape.record_timestamp)
+        .filter(Etape.record_timestamp <= lastUts)
+        .order_by(desc(Etape.record_timestamp))
+        .first()[0]
+    )
+
+    highUts = (
+        session.query(Etape.record_timestamp)
+        .filter(Etape.record_timestamp >= lastUts)
+        .order_by(Etape.record_timestamp)
+        .first()[0]
+    )
+    session.close()
+
+    if highUts - lastUts > lastUts - lowUts:
+        closeUts = lowUts
+    else:
+        closeUts = highUts
+
+    return closeUts
+
+
 def get_mapbox_access_token(folderpath=".", filename="mapbox.txt"):
     import os
 
@@ -23,7 +51,39 @@ def get_mapbox_access_token(folderpath=".", filename="mapbox.txt"):
     return s
 
 
-def get_map_figure(results, colors):
+def get_map_figure(lastUts, line=None):
+    """
+    Get closest time
+    """
+    closeUts = closest_time(lastUts)
+
+    print(lastUts, closeUts)
+
+    """
+    Get data
+    """
+    session = Session()
+
+    results = (
+        session.query(
+            Etape.ecart,
+            Trajet.latitude,
+            Trajet.longitude,
+            Trajet.destination,
+            Trajet.id_trajet,
+            Trajet.id_ligne,
+            Ligne.nom_ligne,
+        )
+        .select_from(Etape)
+        .join(Trajet)
+        .join(Ligne)
+        .filter(Etape.record_timestamp == closeUts)
+    )
+
+    if line:
+        results = results.filter(Trajet.id_ligne == line)
+
+    session.close()
 
     # Récupération du token mapbox
     mapbox_access_token = get_mapbox_access_token()
@@ -34,7 +94,7 @@ def get_map_figure(results, colors):
         lat=[trajet.latitude for trajet in results],
         lon=[trajet.longitude for trajet in results],
         mode="markers",
-        marker=dict(size=9, color=colors),
+        marker=dict(size=9, color=get_colors(results)),
         text=[trajet.destination for trajet in results],
         customdata=[trajet.id_trajet for trajet in results],
     )
@@ -62,30 +122,13 @@ def get_barh(lastUts):
     """
     Get closest date
     """
-    session = Session()
-
-    lowUts = (
-        session.query(Etape.record_timestamp)
-        .filter(Etape.record_timestamp <= lastUts)
-        .order_by(desc(Etape.record_timestamp))
-        .first()[0]
-    )
-
-    highUts = (
-        session.query(Etape.record_timestamp)
-        .filter(Etape.record_timestamp >= lastUts)
-        .order_by(Etape.record_timestamp)
-        .first()[0]
-    )
-
-    if highUts - lastUts > lastUts - lowUts:
-        closeUts = lowUts
-    else:
-        closeUts = highUts
+    closeUts = closest_time(lastUts)
 
     """
     Get data
     """
+    session = Session()
+
     query = (
         session.query(Etape.ecart, Ligne.nom_ligne)
         .select_from(Etape)
