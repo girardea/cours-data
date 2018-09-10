@@ -13,6 +13,10 @@ import json
 
 import progressbar
 
+# https://stackoverflow.com/questions/40845304/runtimewarning-numpy-dtype-size-changed-may-indicate-binary-incompatibility
+import warnings
+warnings.filterwarnings("ignore", message="numpy.dtype size changed")
+
 # from db import create_database
 from dataviz import run_dash
 
