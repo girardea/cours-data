@@ -155,7 +155,7 @@ if __name__ == "__main__":
         d_df = create_dataframes(d)
 
         # On teste les colonnes (types, aberrations, etc.)
-        test(d_df)
+        # test(d_df)
 
         # On rentre ces informations dans la DB
         fill_database(d_df, verbose=args.verbose)

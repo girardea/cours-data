@@ -32,9 +32,9 @@ def download():
 
     # Pour tester que tout a bien fonctionnné, on va vérifié le statut.
     g.raise_for_status()
+
     # On peut construire une `DataFrame` directement à partir d'un "dictionnaires de colonnes".
-    dd = g.json()["records"]
-    return dd
+    return g.json()["records"]
 
 
 def create_dataframes(d):
