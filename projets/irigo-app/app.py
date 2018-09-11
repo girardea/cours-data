@@ -154,15 +154,18 @@ if __name__ == "__main__":
         # Requête l'API et renvoie un dictionnaire (traduction objet du JSON)
         d = download()
 
-        # A partir du dictionnaire, on crée les tables
-        # sous la forme de DataFrames
-        d_df = create_dataframes(d)
+        # Si il y a des données
+        if len(d) > 0:
 
-        # On teste les colonnes (types, aberrations, etc.)
-        # test(d_df)
+            # A partir du dictionnaire, on crée les tables
+            # sous la forme de DataFrames
+            d_df = create_dataframes(d)
 
-        # On rentre ces informations dans la DB
-        fill_database(d_df, verbose=args.verbose)
+            # On teste les colonnes (types, aberrations, etc.)
+            # test(d_df)
+
+            # On rentre ces informations dans la DB
+            fill_database(d_df, verbose=args.verbose)
 
     if args.reset:
         filenames = glob.glob("data/*.json")
