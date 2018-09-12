@@ -4,8 +4,14 @@ services:
   irigo_app:
     container_name: irigo_app
     restart: unless-stopped
+    labels:
+      - "traefik.frontend.rule=Host:irigo.lucasvn.com,www.irigo.lucasvn.com"
+      - "traefik.backend=irigo_app"
+      - "com.centurylinklabs.watchtower.enable=false"
     network_mode: lucasvn
     build: ./irigo-app
     ports:
       - 8383:8383
-    command: python3 app.py --run-server --docker
+    command: python3 app.py --update --run-server --docker
+    volumes:
+      - "/home/kawelio/www/irigo/projets/irigo-app:/home/kawelio/www/irigo/projets/irigo-app"
