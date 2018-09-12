@@ -12,6 +12,6 @@ services:
     build: ./irigo-app
     ports:
       - 8383:8383
-    command: python3 app.py --update --run-server --docker
+    command: python3 app.py --create-db --update --run-server --docker
     volumes:
-      - "/home/kawelio/www/irigo/projets/irigo-app:/home/kawelio/www/irigo/projets/irigo-app"
+      - "/home/kawelio/www/irigo-app/projets/irigo-app:/home/kawelio/www/irigo-app/projets/irigo-app"
