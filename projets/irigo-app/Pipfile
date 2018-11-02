@@ -5,16 +5,14 @@ name = "pypi"
 
 [packages]
 dash = "*"
-dash-core-components = "*"
-dash-html-components = "*"
-"progressbar2" = "*"
 pandas = "*"
-requests = "*"
-plotly = "*"
-numpy = "*"
 sqlalchemy = "*"
+numpy = "*"
+dash-html-components = "*"
+dash-core-components = "*"
+progressbar = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.5"
+python_version = "3.6"
