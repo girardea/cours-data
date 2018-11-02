@@ -151,7 +151,8 @@ def get_barh(lastUts):
         y=dft.index,
         x=dft["ecart"] / 60,
         orientation="h",
-        marker={"color": "rgba(210, 105, 30, 0.5)"},
+        marker={"color":dft["ecart"] / 60,
+                'colorscale':'RdBu'},
     )
 
     layout = go.Layout(
@@ -161,6 +162,7 @@ def get_barh(lastUts):
         xaxis=dict(title="écart absolu moyen (minutes)", range=[0, max(10, xmax)]),
         yaxis=dict(title="ligne"),
         margin={"l": 300},
+        showlegend=True,
     )
 
     figure = {"data": [data], "layout": layout}
@@ -169,7 +171,6 @@ def get_barh(lastUts):
 
 
 def get_tsplot():
-
     session = Session()
 
     query = (
@@ -189,13 +190,30 @@ def get_tsplot():
 
     df = df.resample("15T").mean() / 60
 
-    data = go.Scatter(x=df.index, y=df["ecart"])
+    data = go.Scatter(
+        x=df.index,
+        y=df["ecart"],
+        mode='lines+markers',
+        opacity=0.7,
+        marker={
+            'size': 15,
+            'line': {'width': 0.5, 'color': '#0a3859'},
+            'color': df["ecart"],
+            'colorscale': 'RdBu'
+        },
+    )
 
     layout = go.Layout(
         title="Qualité du service ces dernières heures sur l'ensemble du réseau",
         xaxis={"title": "heure de la journée"},
         yaxis={"title": "écart absolu moyen (minutes)"},
         hovermode="closest",
+        plot_bgcolor="#fff",
+        paper_bgcolor="#fff",
+        font={'color': '#000'},
+        autosize=True,
+        height=300,
+        showlegend=True,
     )
 
     g = dcc.Graph(id="tsplot", figure={"data": [data], "layout": layout})
