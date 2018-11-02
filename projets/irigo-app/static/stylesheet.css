@@ -1,1 +1,11 @@
-.bg-grey{background: #3a3934}
+.bg-grey-clear{
+    background: #8f8c8899;
+}
+
+.color-black{
+    color: #000;
+}
+
+.border-top-black{
+    border-top: #000 solid 3px;
+}
