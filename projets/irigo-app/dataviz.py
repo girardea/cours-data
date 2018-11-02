@@ -17,6 +17,10 @@ import math
 
 import numpy as np
 
+import os
+
+from flask import send_from_directory
+
 import pandas as pd
 
 import plotly.graph_objs as go
@@ -47,7 +51,8 @@ def generate_table(dataframe, max_rows=10):
 
 def get_dash():
     # Instanciation du Dash
-    app = dash.Dash()
+    external_stylesheets = ['/static/stylesheet.css']
+    app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
     # Ouverture d'une session vers la DB
     session = Session()
@@ -78,17 +83,26 @@ def get_dash():
 
     # Contenu de l'app
     app.layout = html.Div(
-        className="container-fluid",
+        className="container-fluid bg-white",
         children=[
             html.Div(
-                className="page-header",
-                children=[html.H1(className="text-center", children="Irigo app")],
+                className="row",
+                children=[
+                    html.Div(
+                        className="col-sm-4",
+                        children=[
+                            html.H1(className="text-center text-black py-4", children="Irigo app"),
+                            html.P(className="text-center text-black py-4", children="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."),
+                        ],
+                    ),
+                    html.Div(className="col-sm-8", children=get_tsplot()),
+                ],
             ),
             html.Div(
                 className="row",
                 children=[
-                    html.Div(className="col-sm-6", children=[dcc.Graph(id="barh")]),
-                    html.Div(className="col-sm-6", children=get_tsplot()),
+                    html.Div(className="col-sm-4", children=[dcc.Graph(id="barh")]),
+                    html.Div(className="col-sm-8", children=[dcc.Graph(id="map")]),
                 ],
             ),
             html.Div(
@@ -119,32 +133,27 @@ def get_dash():
                             html.Table(id="click-data"),
                         ],
                     ),
-                    html.Div(className="col-sm-8", children=[dcc.Graph(id="map")]),
                 ],
             ),
-            html.Div(
-                className="page-footer font-small blue pt4",
+            html.Footer(
+                className="page-footer font-small fixed-bottom bg-grey-clear border-top-black py-3",
                 children=html.Div(
-                    className="container-fluid text-center text-md-left",
-                    children=html.Div(
-                        className="row",
-                        children=html.Div(
-                            className="col-md-6 mt-md-0 mt-3",
-                            children=[
-                                html.H5(
-                                    className="text-uppercase",
-                                    children="Footer Content",
-                                ),
-                                html.P("Here you may write anything you want.")
-                            ],
-                        ),
-                    ),
+                    className="text-center color-black",
+                        children=[
+                            "Outil développé par ",
+                            html.A(
+                                className="color-black",
+                                href="http://www.crossdata.tech/",
+                                children="Crossdata",
+                            ),
+
+                        ],
                 ),
             ),
         ],
     )
 
-    @app.callback(Output("barh", "figure"), [Input("tsplot", "hoverData")])
+    @app.callback(Output("barh", "figure"), [Input("tsplot", "clickData")])
     def plot_barh(hoverData):
         if not hoverData:
             return get_barh(lastUts)
@@ -206,7 +215,7 @@ def get_dash():
 
     @app.callback(
         Output("map", "figure"),
-        [Input("select-ligne", "value"), Input("tsplot", "hoverData")],
+        [Input("select-ligne", "value"), Input("tsplot", "clickData")],
     )
     def update_graph(value, hoverData):
         if not hoverData:
