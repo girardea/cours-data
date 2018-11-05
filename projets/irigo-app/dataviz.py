@@ -53,6 +53,7 @@ def get_dash():
     # Instanciation du Dash
     external_stylesheets = ['/static/stylesheet.css']
     app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+    app.config['suppress_callback_exceptions'] = True
 
     # Ouverture d'une session vers la DB
     session = Session()
@@ -105,36 +106,36 @@ def get_dash():
                     html.Div(className="col-sm-8", children=[dcc.Graph(id="map")]),
                 ],
             ),
-            html.Div(
-                className="row",
-                children=[
-                    html.Div(
-                        className="col-sm-4",
-                        children=[
-                            dcc.Dropdown(
-                                id="select-ligne",
-                                options=[
-                                    {
-                                        "label": trajet.nom_ligne,
-                                        "value": trajet.id_ligne,
-                                    }
-                                    for trajet in results
-                                ],
-                            ),
-                            dcc.Markdown(
-                                d(
-                                    """
-                **Données par point**
-
-                Cliquez sur un point pour afficher les données relatives à celui-ci.
-            """
-                                )
-                            ),
-                            html.Table(id="click-data"),
-                        ],
-                    ),
-                ],
-            ),
+            # html.Div(
+            #     className="row",
+            #     children=[
+            #         html.Div(
+            #             className="col-sm-4",
+            #             children=[
+            #                 dcc.Dropdown(
+            #                     id="select-ligne",
+            #                     options=[
+            #                         {
+            #                             "label": trajet.nom_ligne,
+            #                             "value": trajet.id_ligne,
+            #                         }
+            #                         for trajet in results
+            #                     ],
+            #                 ),
+            #                 dcc.Markdown(
+            #                     d(
+            #                         """
+            #     **Données par point**
+            #
+            #     Cliquez sur un point pour afficher les données relatives à celui-ci.
+            # """
+            #                     )
+            #                 ),
+            #                 html.Table(id="click-data"),
+            #             ],
+            #         ),
+            #     ],
+            # ),
             html.Footer(
                 className="page-footer font-small fixed-bottom bg-grey-clear border-top-black py-3",
                 children=html.Div(
@@ -169,64 +170,64 @@ def get_dash():
 
         return get_barh(tt)
 
-    @app.callback(
-        dash.dependencies.Output("click-data", "children"),
-        [dash.dependencies.Input("map", "clickData")],
-    )
-    def display_click_data(clickData):
-        # nom de ligne
-        # numéro de ligne
-        # prochain arrêt
-        # retard
-        # Ouverture d'une session vers la DB
-        session = Session()
-
-        if clickData:
-            query = (
-                session.query(
-                    Ligne.nom_ligne,
-                    Ligne.num_ligne,
-                    Vehicule.type_vehicule,
-                    Vehicule.etat_vehicule,
-                )
-                .select_from(Trajet)
-                .join(Ligne)
-                .join(Vehicule)
-                .filter(Trajet.id_trajet == clickData["points"][0]["customdata"])
-            )
-        else:
-            query = (
-                session.query(
-                    Ligne.nom_ligne,
-                    Ligne.num_ligne,
-                    Vehicule.type_vehicule,
-                    Vehicule.etat_vehicule,
-                )
-                .select_from(Trajet)
-                .join(Ligne)
-                .join(Vehicule)
-            )
-
-        df = pd.read_sql_query(query.statement, query.session.bind)
-
-        session.close()
-
-        return generate_table(df)
+    # @app.callback(
+    #     dash.dependencies.Output("click-data", "children"),
+    #     [dash.dependencies.Input("map", "clickData")],
+    # )
+    # def display_click_data(clickData):
+    #     # nom de ligne
+    #     # numéro de ligne
+    #     # prochain arrêt
+    #     # retard
+    #     # Ouverture d'une session vers la DB
+    #     session = Session()
+    #
+    #     if clickData:
+    #         query = (
+    #             session.query(
+    #                 Ligne.nom_ligne,
+    #                 Ligne.num_ligne,
+    #                 Vehicule.type_vehicule,
+    #                 Vehicule.etat_vehicule,
+    #             )
+    #             .select_from(Trajet)
+    #             .join(Ligne)
+    #             .join(Vehicule)
+    #             .filter(Trajet.id_trajet == clickData["points"][0]["customdata"])
+    #         )
+    #     else:
+    #         query = (
+    #             session.query(
+    #                 Ligne.nom_ligne,
+    #                 Ligne.num_ligne,
+    #                 Vehicule.type_vehicule,
+    #                 Vehicule.etat_vehicule,
+    #             )
+    #             .select_from(Trajet)
+    #             .join(Ligne)
+    #             .join(Vehicule)
+    #         )
+    #
+    #     df = pd.read_sql_query(query.statement, query.session.bind)
+    #
+    #     session.close()
+    #
+    #     return generate_table(df)
 
     @app.callback(
         Output("map", "figure"),
-        [Input("select-ligne", "value"), Input("tsplot", "clickData")],
+        [Input("tsplot", "hoverData")],
     )
-    def update_graph(value, hoverData):
+    def update_graph(hoverData):
         if not hoverData:
-            return get_map_figure(lastUts, line=value)
+            return get_map_figure(lastUts)
 
         tt = dt.datetime.strptime(hoverData["points"][0]["x"], "%Y-%m-%d %H:%M")
 
         # bug des deux heures (lié à la timezone)
         tt -= dt.timedelta(hours=2)
 
-        return get_map_figure(tt, line=value)
+        return get_map_figure(tt)
 
     # Bootstrap
     app.css.append_css(
