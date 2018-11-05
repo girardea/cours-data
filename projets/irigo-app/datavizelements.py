@@ -11,7 +11,7 @@ import plotly.graph_objs as go
 from sqlalchemy import desc, func
 
 # import internes
-from db import Etape, Ligne, Trajet, Session
+from db import Etape, Ligne, Trajet, Vehicule, Session
 
 
 def closest_time(lastUts):
@@ -73,10 +73,12 @@ def get_map_figure(lastUts, line=None):
             Trajet.id_trajet,
             Trajet.id_ligne,
             Ligne.nom_ligne,
+            Vehicule.type_vehicule
         )
         .select_from(Etape)
         .join(Trajet)
         .join(Ligne)
+        .join(Vehicule)
         .filter(Etape.record_timestamp == closeUts)
     )
 
@@ -99,8 +101,20 @@ def get_map_figure(lastUts, line=None):
         customdata=[trajet.id_trajet for trajet in results],
     )
 
+    vehicules = [vehicule.type_vehicule for vehicule in results]
+
+    total_bus = 0
+    total_tram = 0
+
+    for vehicule in vehicules:
+        if vehicule=='CITADIS':
+            total_tram += 1
+        elif vehicule!='CITADIS':
+            total_bus += 1
+
     layout = go.Layout(
-        height=700,
+        title=f"Il y a {total_bus} bus en circulation et {total_tram} tram en circulation",
+        height=600,
         autosize=True,
         hovermode="closest",
         mapbox=dict(
