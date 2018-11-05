@@ -113,7 +113,7 @@ def get_map_figure(lastUts, line=None):
             total_bus += 1
 
     layout = go.Layout(
-        title=f"Il y a {total_bus} bus en circulation et {total_tram} tram en circulation",
+        title=f"Il y a <b>{total_bus}</b> bus et <b>{total_tram}</b> tram en circulation",
         height=600,
         autosize=True,
         hovermode="closest",
@@ -170,7 +170,7 @@ def get_barh(lastUts):
     )
 
     layout = go.Layout(
-        title="Qualité du service ligne par ligne {}".format(
+        title="<b>Qualité du service ligne par ligne</b> <i>{}</i>".format(
             (closeUts + dt.timedelta(hours=2)).strftime("%A %d/%m/%Y à %H:%M")
         ),
         xaxis=dict(title="écart absolu moyen (minutes)", range=[0, max(10, xmax)]),
@@ -218,13 +218,12 @@ def get_tsplot():
     )
 
     layout = go.Layout(
-        title="Qualité du service ces dernières heures sur l'ensemble du réseau",
+        title="<b>Qualité du service ces dernières heures sur l'ensemble du réseau</b>",
         xaxis={"title": "heure de la journée"},
         yaxis={"title": "écart absolu moyen (minutes)"},
         hovermode="closest",
         plot_bgcolor="#fff",
         paper_bgcolor="#fff",
-        font={'color': '#000'},
         autosize=True,
         height=300,
         showlegend=True,
