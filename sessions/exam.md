@@ -12,7 +12,7 @@ Les données ont été collectées sur une station de stockage Sun Sparcstation 
 
 # Objectif
 
-**Prévoir la colonne *usr* en vous basant sur les colonnes 0 à 20.**
+**Prévoir la colonne *usr* en vous basant sur les colonnes 0 à 22.**
 
 La colonne *usr* représente la portion du temps où les processeurs fonctionnent pour l'utilisateur (et pas juste pour le système).
 
@@ -22,5 +22,5 @@ La colonne *usr* représente la portion du temps où les processeurs fonctionnen
 2. Les vérifier et les nettoyer au besoin
 3. Tester différents régresseurs pour prévoir *usr* (y compris un régresseur "idiot"). On utilisera le score R2.
 4. Comprendre pourquoi si on utilise la colonne *sys* c'est trop facile.
-5. Prévoir au mieux la colonne *usr* en n'utilisant que les colonnes 0 à 20 (time à freeswap).
+5. Prévoir au mieux la colonne *usr* en n'utilisant que les colonnes 0 à 22 (time à freeswap).
 6. Trouver les colonnes qui influencent le plus la colonne *usr*.
