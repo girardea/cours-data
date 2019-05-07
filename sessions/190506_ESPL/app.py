@@ -7,7 +7,11 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
 
+import numpy as np
+
 import pandas as pd
+
+import plotly.graph_objs as go
 
 external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
@@ -37,6 +41,7 @@ app.layout = html.Div(
         html.H2(children="Analyse visuelle des colonnes"),
         html.H3(children="Colonnes de float"),
         dcc.Dropdown(id="dropdown-float"),
+        html.Div(id="div-float-info"),
     ]
 )
 
@@ -91,11 +96,32 @@ def display_dropdown_float(contents, filename, date):
 
     df = parse_contents(contents, filename, date)
 
-    print(df.columns)
-
     df = df.select_dtypes(include=["float64"])
 
     return [{"label": col, "value": col} for col in df.columns]
+
+
+@app.callback(
+    Output("div-float-info", "children"),
+    [Input("dropdown-float", "value")],
+    [
+        State("upload-data", "contents"),
+        State("upload-data", "filename"),
+        State("upload-data", "last_modified"),
+    ],
+)
+def display_float_info(value, contents, filename, date):
+    if value is None:
+        return html.P("En attente de données")
+
+    df = parse_contents(contents, filename, date)
+
+    return [
+    	html.P(f"Valeur min : {df[value].min()}"),
+    	html.P(f"Valeur max : {df[value].max()}")
+    ]
+
+#    return dcc.Graph(figure={"data": [go.Histogram(x=df[value])]})
 
 
 if __name__ == "__main__":
