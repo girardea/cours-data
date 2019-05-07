@@ -130,11 +130,11 @@ def parse_contents(contents, filename, date):
 )
 def display_alerts(contents, filename, date):
     if contents is None:
-        return 
+        return
 
     df = parse_contents(contents, filename, date)
 
-    if df != pd.DataFrame:
+    if type(df) != pd.DataFrame:
         return df
 
     return
