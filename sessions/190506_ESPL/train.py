@@ -2,6 +2,13 @@ import pandas as pd
 
 def create_X(df):
 	"""Ajoute des colonnes au DF"""	
+	# Pour gérer le cas du predict sur un mot.
+	if type(df) == str:
+		df = pd.DataFrame({
+			'data': [df],
+			'target': [None]
+		})
+
 	# Compte les caractères
 	df['cnt'] = df['data'].apply(len)
 
