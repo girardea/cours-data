@@ -28,13 +28,13 @@ for filename in glob(filepath + "/*.csv"):
         for col_name, elem in zip(df.columns, row):
             data.append({
                 'data': elem,
-                'target': col_name
+                'target': col_name.split(".")[0] if col_name == col_name.lower() else 'text'
             })
 
         bar.update(idx)
     bar.finish()
 
 print("Writing output...")
-pd.DataFrame(data).to_csv('train.csv')
+pd.DataFrame(data).to_csv('train.csv', index=False)
 
 print("Finished!")
