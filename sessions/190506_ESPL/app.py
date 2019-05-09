@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import base64
-import io
+
+import csv
 
 import dash
 import dash_core_components as dcc
@@ -9,6 +10,8 @@ from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
 import dash_bootstrap_components as dbc
+
+import io
 
 import numpy as np
 
@@ -108,7 +111,16 @@ def parse_contents(contents, filename, date):
     try:
         if filename.endswith(".csv"):
             # Assume that the user uploaded a CSV file
-            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")))
+
+            # Guess delimiter
+            with io.StringIO(decoded.decode("utf-8")) as file:
+                dialect = csv.Sniffer().sniff(file.read())
+
+            print(dialect.delimiter)
+
+            # Read file into pandas
+            df = pd.read_csv(io.StringIO(decoded.decode("utf-8")),
+                             delimiter=dialect.delimiter)
         elif filename.endswith(".xlsx") or filename.endswith(".xls"):
             # Assume that the user uploaded an excel file
             df = pd.read_excel(io.BytesIO(decoded))
