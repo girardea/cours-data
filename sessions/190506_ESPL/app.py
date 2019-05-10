@@ -132,8 +132,20 @@ def display_graph(contents, filename, date):
 
     st = df.notnull().mean()
 
+    dft = pd.concat([st, df.dtypes], axis=1)
+    dft.columns = ["notnull", "type"]
+
     return {
-        "data": [{"x": st, "y": st.index, "type": "bar", "orientation": "h"}],
+        "data": [
+            {
+                "x": dft_groupby["notnull"],
+                "y": dft_groupby.index,
+                "type": "bar",
+                "orientation": "h",
+                "name": str(idx),
+            }
+            for idx, dft_groupby in dft.groupby("type")
+        ],
         "layout": {
             "title": f"Colonnes du fichier {filename}",
             "xaxis": {
