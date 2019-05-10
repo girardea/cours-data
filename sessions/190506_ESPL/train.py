@@ -1,5 +1,7 @@
 import pandas as pd
 
+import re
+
 def create_X(df):
 	"""Ajoute des colonnes au DF"""	
 	# Pour gérer le cas du predict sur un mot.
@@ -16,10 +18,15 @@ def create_X(df):
 	def compte_chiffres(x):
 		cnt = 0
 		for char in x:
-			if x in "0123456789":
+			if char in "0123456789":
 				cnt += 1
 		return cnt
 	df['cnt_chiffres'] = df['data'].apply(compte_chiffres)
+
+	# Compter le nombre de lettres
+	def compte_lettres(x):
+		return len(re.findall('[a-zA-Z]', x))
+	df['cnt_lettres'] = df['data'].apply(compte_lettres)
 
 	return df.drop(columns=['data', 'target'])
 

@@ -9,4 +9,7 @@ def idiot(mot):
 mot = input("Entrez un mot :")
 
 print("Ce mot est de type :", idiot(mot))
-print("Ce mot est de type :", rfc.predict(create_X(mot)))
+intermediaire = create_X(mot)
+# print(intermediaire)
+print("Ce mot est de type :", rfc.predict(intermediaire))
+print(f"proba :", rfc.predict_proba(intermediaire))
